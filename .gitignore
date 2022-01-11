@@ -30,3 +30,17 @@
 *.exe
 *.out
 *.app
+cmdline
+
+# CLion files
+CMakeLists.txt
+*.iml
+.idea/
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/gradle.xml
+.idea/assetWizardSettings.xml
+.idea/dictionaries
+.idea/libraries
+out/
+cmake-build-debug/
