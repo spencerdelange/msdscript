@@ -2,7 +2,10 @@
 // Created by Spencer DeLange on 1/11/22.
 //
 
-#include "cmdline.h"
+#include "msdscript.h"
+#include "expr.h"
+#include "catch.h"
+#include "test.h"
 
 void use_arguments(int argc, char* argv[]){
     string argvArr[argc];
@@ -12,6 +15,7 @@ void use_arguments(int argc, char* argv[]){
     
     bool tested = false;
     for(int i = 1; i < argc; i++){
+        // Options for command line below
         if(argvArr[i] == "--help"){
             help();
         } else if(argvArr[i] == "--test"){
@@ -20,7 +24,9 @@ void use_arguments(int argc, char* argv[]){
                 exit(1);
             } else{
                 tested = true;
-                test();
+                if(test(argv) != 0){
+                    exit(1);
+                }
             }
         } else{
             cerr << "ERROR: invalid command" << endl;
@@ -35,7 +41,4 @@ void help(){
             "\t--test"
          << endl;
     exit(0);
-}
-void test(){
-    cout << "Tests passed." << endl;
 }
