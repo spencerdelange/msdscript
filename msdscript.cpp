@@ -3,8 +3,7 @@
 //
 
 #include "msdscript.h"
-#include "expr.h"
-#include "catch.h"
+#include "Expr.h"
 #include "test.h"
 
 void use_arguments(int argc, char* argv[]){

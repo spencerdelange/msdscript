@@ -4,7 +4,7 @@
 
 #include "msdscript.h"
 #include "catch.h"
-#include "expr.h"
+#include "Expr.h"
 #include "test.h"
 
 int main(int argc, char* argv[]) {
