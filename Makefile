@@ -1,6 +1,6 @@
-INCS = msdscript.h Add.h catch.h expr.h Mult.h Num.h test.h Var.h
+INCS = msdscript.h catch.h Expr.h test.h
 
-OBJS = main.o msdscript.o Add.o Mult.o Num.o test.o Var.o
+OBJS = main.o msdscript.o test.o Expr.o
 
 CXXFLAGS = --std=c++14 -O2
 
@@ -11,12 +11,6 @@ main.o: $(INCS)
 
 msdscript.o: $(INCS)
 
-Add.o: $(INCS)
-
-Mult.o: $(INCS)
-
-Num.o: $(INCS)
-
 test.o: $(INCS)
 
-Var.o: $(INCS)
+Expr.o: $(INCS)
