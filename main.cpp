@@ -7,6 +7,5 @@
 
 int main(int argc, char* argv[]) {
     use_arguments(argc, argv);
-    test(argv);
     return 0;
 }
