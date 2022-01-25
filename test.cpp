@@ -82,5 +82,68 @@ TEST_CASE("subst tests"){
     CHECK( (new Mult(new Var("x"), new Num(7)))
                    ->subst("x", new Var("y"))
                    ->equals(new Mult(new Var("y"), new Num(7))) );
+}
+TEST_CASE("print"){
+    Num* n1 = new Num(3);
+    std::stringstream out1("");
+    n1->print(out1);
+    CHECK(out1.str() == "3");
 
+    Var* v1 = new Var("var1");
+    std::stringstream out2("");
+    v1->print(out2);
+    CHECK(out2.str() == "var1");
+
+    Add* a1 = new Add(n1, v1);
+    std::stringstream out3("");
+    a1->print(out3);
+    CHECK(out3.str() == "(3+var1)");
+
+    Mult* m1 = new Mult(n1, v1);
+    std::stringstream out4("");
+    m1->print(out4);
+    CHECK(out4.str() == "(3*var1)");
+
+    Mult* m2 = new Mult(m1, n1);
+    std::stringstream out5("");
+    m2->print(out5);
+    CHECK(out5.str() == "((3*var1)*3)");
+
+    Add* a2 = new Add(n1, a1);
+    std::stringstream out6("");
+    a2->print(out6);
+    CHECK(out6.str() == "(3+(3+var1))");
+
+    CHECK(a2->to_string() == "(3+(3+var1))");
+}
+TEST_CASE("pretty_print"){
+    Num* n3 = new Num(3);
+    CHECK(n3->pretty_to_string() == "3");
+
+    Var* v1 = new Var("v1");
+    CHECK(v1->pretty_to_string() == "v1");
+
+    Add* a1 = new Add(n3, v1);
+    CHECK(a1->pretty_to_string() == "3 + v1");
+
+    Add* a2 = new Add(a1, n3);
+    CHECK(a2->pretty_to_string() == "(3 + v1) + 3");
+
+    Mult* m1 = new Mult(n3, v1);
+    CHECK(m1->pretty_to_string() == "3 * v1");
+
+    Num* n1 = new Num(1);
+    Num* n2 = new Num(2);
+    Mult* m2 = new Mult(n2, n3);
+    Add* a4 = new Add(n1, m2);
+    CHECK(a4->pretty_to_string() == "1 + 2 * 3");
+
+    Mult* m3 = new Mult(n1, new Add(n2, n3));
+    CHECK(m3->pretty_to_string() == "1 * (2 + 3)");
+
+    Mult* m4 = new Mult(new Mult(new Num(2), new Num(3)), new Num(4));
+    CHECK(m4->pretty_to_string() == "(2 * 3) * 4");
+
+    Mult* m5 = new Mult(new Num(2), new Mult(new Num(3), new Num(4)));
+    CHECK(m5->pretty_to_string() == "2 * 3 * 4");
 }

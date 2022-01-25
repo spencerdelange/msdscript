@@ -2,7 +2,20 @@
 // Created by Spencer DeLange on 1/16/22.
 //
 
+#include <sstream>
 #include "Expr.h"
+
+// Expr implementations
+std::string Expr::to_string() {
+    std::stringstream out("");
+    this->print(out);
+    return out.str();
+}
+std::string Expr::pretty_to_string() {
+    std::stringstream out("");
+    this->pretty_print(out);
+    return out.str();
+}
 
 // Num implementations
 Num::Num(int val) {
@@ -23,6 +36,15 @@ bool Num::has_variable() {
 }
 Expr *Num::subst(std::string to_replace, Expr *substitute_expr) {
     return this;
+}
+void Num::print(std::ostream& output) {
+    output << this->val;
+}
+void Num::pretty_print(std::ostream &output) {
+    output << this->val;
+}
+precedence_t Num::pretty_print_at() {
+    return prec_none;
 }
 
 // Var implementations
@@ -49,6 +71,15 @@ Expr *Var::subst(std::string to_replace, Expr* substitute_expr) {
         return this;
     }
 }
+void Var::print(std::ostream &output) {
+    output << this->name;
+}
+void Var::pretty_print(std::ostream &output) {
+    output << this->name;
+}
+precedence_t Var::pretty_print_at() {
+    return prec_none;
+}
 
 // Add implementations
 Add::Add(Expr *lhs, Expr *rhs) {
@@ -73,6 +104,34 @@ Expr *Add::subst(std::string to_replace, Expr *substitute_expr) {
     Add* temp = new Add(lhs->subst(to_replace, substitute_expr), rhs->subst(to_replace, substitute_expr));
     return temp;
 }
+void Add::print(std::ostream &output) {
+    output << "(";
+    this->lhs->print(output);
+    output << "+";
+    this->rhs->print(output);
+    output << ")";
+}
+void Add::pretty_print(std::ostream &output) {
+    if(lhs->pretty_print_at() == prec_add){
+        output << "(";
+        this->lhs->pretty_print(output);
+        output << ")";
+    } else {
+        this->lhs->pretty_print(output);
+    }
+    output << " + ";
+    if(lhs->pretty_print_at() == prec_mult){
+        output << "(";
+        this->rhs->pretty_print(output);
+        output << ")";
+    } else {
+        this->rhs->pretty_print(output);
+    }
+}
+// if pretty_print_at returns
+precedence_t Add::pretty_print_at() {
+    return prec_add;
+}
 
 // Mult implementations
 Mult::Mult(Expr *lhs, Expr *rhs) {
@@ -96,3 +155,31 @@ bool Mult::has_variable() {
 Expr *Mult::subst(std::string to_replace, Expr* substitute_expr) {
     return new Mult(lhs->subst(to_replace, substitute_expr), rhs->subst(to_replace, substitute_expr));
 }
+void Mult::print(std::ostream &output) {
+    output << "(";
+    this->lhs->print(output);
+    output << "*";
+    this->rhs->print(output);
+    output << ")";
+}
+void Mult::pretty_print(std::ostream &output) {
+    if(lhs->pretty_print_at() >= prec_add){
+        output << "(";
+        this->lhs->pretty_print(output);
+        output << ")";
+    } else {
+        this->lhs->pretty_print(output);
+    }
+    output << " * ";
+    if(this->rhs->pretty_print_at() == prec_add){
+        output << "(";
+        this->rhs->pretty_print(output);
+        output << ")";
+    } else{
+        this->rhs->pretty_print(output);
+    }
+}
+precedence_t Mult::pretty_print_at() {
+    return prec_mult;
+}
+
