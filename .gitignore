@@ -45,3 +45,4 @@ CMakeLists.txt
 .idea/libraries
 out/
 cmake-build-debug/
+cmake-build-debug-coverage/

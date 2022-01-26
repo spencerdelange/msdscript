@@ -23,6 +23,11 @@ TEST_CASE("equalstests") {
     CHECK(a1->equals(a1) == true);
     CHECK(a1->equals(m) == false);
     CHECK(n1->equals(a1) == false);
+    Mult* m1 = nullptr;
+    CHECK(m->equals(m1) == false);
+    Var* v1 = nullptr;
+    Var* v2 = new Var("x");
+    CHECK(v2->equals(v1) == false);
 }
 TEST_CASE("interp tests") {
     Num* n2 = new Num(2);
@@ -63,7 +68,6 @@ TEST_CASE("subst tests"){
     Add* a1 = new Add(v4, n1);
     CHECK(a1->equals(new Add(new Var("z"), new Num(3))));
 
-
     Var* v5 = new Var("x");
     Num* n7 = new Num(7);
     Add* a2 = new Add(v5, n7);
@@ -75,6 +79,9 @@ TEST_CASE("subst tests"){
     a2 = (Add*)a2->subst("x", new Var("y"));
     CHECK(a2->equals(a3));
 
+    Var* v7 = new Var("x");
+    v6 = (Var*)v7->subst("j", new Var("j"));
+    CHECK(v7->pretty_to_string() == "x");
 
     CHECK( (new Add(new Var("x"), new Num(7)))
                    ->subst("x", new Var("y"))
@@ -146,4 +153,11 @@ TEST_CASE("pretty_print"){
 
     Mult* m5 = new Mult(new Num(2), new Mult(new Num(3), new Num(4)));
     CHECK(m5->pretty_to_string() == "2 * 3 * 4");
+
+    Mult* m6 = new Mult(new Mult(new Num(3), new Num(2)), new Add(new Num(2), new Num(1)));
+    CHECK(m6->pretty_to_string() == "(3 * 2) * (2 + 1)");
+
+    Add* a5 = new Add(new Mult(new Num(1), new Num(2)), new Add(new Num(4), new Num(7)));
+    CHECK(a5->pretty_to_string() == "1 * 2 + (4 + 7)");
+
 }

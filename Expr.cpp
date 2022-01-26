@@ -120,7 +120,7 @@ void Add::pretty_print(std::ostream &output) {
         this->lhs->pretty_print(output);
     }
     output << " + ";
-    if(lhs->pretty_print_at() == prec_mult){
+    if(lhs->pretty_print_at() == prec_mult && rhs->pretty_print_at() == prec_add){
         output << "(";
         this->rhs->pretty_print(output);
         output << ")";
