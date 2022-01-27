@@ -30,8 +30,8 @@ public:
     virtual void print(std::ostream& output) = 0;
     // Prints this Expr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
     virtual void pretty_print(std::ostream& output) = 0;
-    // Returns whether this Expr needs parentheses depending on the given precedence
-    virtual precedence_t pretty_print_at() = 0;
+    // Prints this Expr to output. Preceding expression, the integer place of the last newline is given and a boolean of whether _let needs parentheses is given.
+    virtual void pretty_print_at(std::ostream &output, precedence_t prec, int lastNewLine, bool letParens) = 0;
     // Returns a string containing the results of print
     std::string to_string();
     // Returns a string containing the results of print
@@ -56,8 +56,8 @@ public:
     void print(std::ostream& output) override;
     // Prints this Num's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
     void pretty_print(std::ostream& output) override;
-    // Returns whether this Num needs parentheses based on the given precedence
-    precedence_t pretty_print_at() override;
+    // Prints this Num to output. Preceding expression, the integer place of the last newline is given and a boolean of whether _let needs parentheses is given.
+    void pretty_print_at(std::ostream &output, precedence_t prec, int lastNewLine, bool letParens) override;
 };
 
 // Expr subclass representing a variable in an expression
@@ -78,8 +78,8 @@ public:
     void print(std::ostream& output) override;
     // Prints this Var's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
     void pretty_print(std::ostream& output) override;
-    // Returns whether this Var needs parentheses based on the given precedence
-    precedence_t pretty_print_at() override;
+    // Prints this Var to output. Preceding expression, the integer place of the last newline is given and a boolean of whether _let needs parentheses is given.
+    void pretty_print_at(std::ostream &output, precedence_t prec, int lastNewLine, bool letParens) override;
 };
 
 // Expr subclass representing the addition of two expressions
@@ -101,8 +101,8 @@ public:
     void print(std::ostream& output) override;
     // Prints this Add's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
     void pretty_print(std::ostream& output) override;
-    // Returns the precedence level of Add
-    precedence_t pretty_print_at() override;
+    // Prints this Add to output. Preceding expression, the integer place of the last newline is given and a boolean of whether _let needs parentheses is given.
+    void pretty_print_at(std::ostream &output, precedence_t prec, int lastNewLine, bool letParens) override;
 };
 
 // Expr subclass representing the multiplication of two expressions
@@ -124,15 +124,36 @@ public:
     void print(std::ostream& output) override;
     // Prints this Mult's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
     void pretty_print(std::ostream& output) override;
-    // Returns the precedence level of Mult
-    precedence_t pretty_print_at() override;
+    // Prints this Mult to output. Preceding expression, the integer place of the last newline is given and a boolean of whether _let needs parentheses is given.
+    void pretty_print_at(std::ostream &output, precedence_t prec, int lastNewLine, bool letParens) override;
 };
 
-
+// Expr subclass representing a variable assigned a value in a given expression
+class Let : public Expr {
+public:
+    Var *lhs;
+    Expr *rhs;
+    Expr *body;
+    // Constructor
+    Let(Var* lhs, Expr *rhs, Expr *body);
+    // Returns whether this is equal to a given Expr
+    bool equals(Expr *e) override;
+    // Returns the value of this let Expr
+    int interp() override;
+    // Returns whether expression has a variable
+    bool has_variable() override;
+    // substitutes a variable in an expression with a given variable
+    Expr* subst(std::string to_replace, Expr* substitute_expr) override;
+    // Print's this Let's string representation to a given std::ostream&
+    void print(std::ostream& output) override;
+    // Prints this Let's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
+    void pretty_print(std::ostream& output) override;
+    // Prints this Let to output. Preceding expression, the integer place of the last newline is given and a boolean of whether _let needs parentheses is given.
+    void pretty_print_at(std::ostream &output, precedence_t prec, int lastNewLine, bool letParens) override;
+};
+// Helper function that prints the given expression's to_string to std::cout
+void printExpr(Expr* e);
+// Helper function that prints the given expression's pretty_to_string to std::cout
+void printPrettyExpr(Expr* e);
 
 #endif //MSDSCRIPT_EXPR_H
-
-/*
- * Okay so think about this... 2 + 3. We wouldn't have to add a parentheses. Why? Because... There aren't any more expressions being added. How do I know that? I call a helper function on each member var. I'll pass in the expr argument... If it's a prec_none, don't
- * The question Matt is asking is whether this the rest sorted or not in relation to the current fish. The question I have is whether I need to put parentheses around a given expression? No. The question is whether I need to put parentheses around my expression or not. The answer is
- */

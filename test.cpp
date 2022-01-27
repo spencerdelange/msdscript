@@ -28,6 +28,14 @@ TEST_CASE("equalstests") {
     Var* v1 = nullptr;
     Var* v2 = new Var("x");
     CHECK(v2->equals(v1) == false);
+    Let* l1 = new Let(new Var("x"), new Num(1), new Num(2));
+    Let* l2 = new Let(new Var("x"), new Num(1), new Num(2));
+    CHECK(v2->equals(l1) == false);
+    CHECK(l1->equals(l2) == true);
+    Let* l3 = new Let(new Var("y"), new Num(1), new Num(2));
+    CHECK(l1->equals(l3) == false);
+    Let* l4 = nullptr;
+    CHECK(l3->equals(l4) == false);
 }
 TEST_CASE("interp tests") {
     Num* n2 = new Num(2);
@@ -42,6 +50,22 @@ TEST_CASE("interp tests") {
     CHECK(m2->interp() == 30);
     Var* v1 = new Var("a");
     CHECK_THROWS_WITH(v1->interp(), "Error: a variable has no value.");
+    Let* l1 = new Let(new Var("x"), new Num(1), new Num(2));
+    CHECK(l1->interp() == 2);
+    Let* l2 = new Let(new Var("x"), new Num(2), new Add(new Var("x"), new Num(5)));
+    CHECK(l2->interp() == 7);
+
+    Let* l3 = new Let(new Var("x"), new Add(new Var("x"), new Num(2)), new Add(new Var("x"), new Num(1)));
+    Let* l4 = new Let(new Var("x"), new Num(5), l3);
+    CHECK(l4->interp() == 8);
+
+    Let* l5 = new Let(new Var("x"), new Num(6), new Add(new Var("x"), new Num(1)));
+    Let* l6 = new Let(new Var("x"), new Num(5), l5);
+    CHECK(l6->interp() == 7);
+
+    Let* l7 = new Let(new Var("y"), new Num(6), new Add(new Var("x"), new Num(1)));
+    Let* l8 = new Let(new Var("x"), new Num(5), l7);
+    CHECK(l8->interp() == 6);
 }
 TEST_CASE("has_variable tests"){
     Add* a1 = new Add(new Num(3), new Var("a"));
@@ -54,6 +78,12 @@ TEST_CASE("has_variable tests"){
     CHECK(n1->has_variable() == false);
     Var* v1 = new Var("b");
     CHECK(v1->has_variable() == true);
+    Let* l3 = new Let(new Var("x"), new Add(new Var("x"), new Num(2)), new Num(3));
+    CHECK(l3->has_variable() == true);
+    Let* l1 = new Let(new Var("x"), new Num(1), new Num(2));
+    CHECK(l1->has_variable() == false);
+    Let* l4 = new Let(new Var("x"), new Num(3), new Add(new Var("x"), new Num(2)));
+    CHECK(l4->has_variable() == true);
 }
 TEST_CASE("subst tests"){
     Var* v1 = new Var("a");
@@ -122,6 +152,16 @@ TEST_CASE("print"){
     CHECK(out6.str() == "(3+(3+var1))");
 
     CHECK(a2->to_string() == "(3+(3+var1))");
+
+    Let* l1 = new Let(new Var("x"), new Num(1), new Num(2));
+    CHECK(l1->to_string() == "(_let x=1 _in 2)");
+
+    Let* l2 = new Let(new Var("y"), new Num(3), new Add(new Var("y"), new Num(2)));
+    CHECK(l2->to_string() == "(_let y=3 _in (y+2))");
+
+    Let* l3 = new Let(new Var("x"), new Num(5), new Add(l2, new Var("x")));
+    CHECK(l3->to_string() == "(_let x=5 _in ((_let y=3 _in (y+2))+x))");
+
 }
 TEST_CASE("pretty_print"){
     Num* n3 = new Num(3);
@@ -157,7 +197,46 @@ TEST_CASE("pretty_print"){
     Mult* m6 = new Mult(new Mult(new Num(3), new Num(2)), new Add(new Num(2), new Num(1)));
     CHECK(m6->pretty_to_string() == "(3 * 2) * (2 + 1)");
 
-    Add* a5 = new Add(new Mult(new Num(1), new Num(2)), new Add(new Num(4), new Num(7)));
-    CHECK(a5->pretty_to_string() == "1 * 2 + (4 + 7)");
+    Add* a5 = new Add(new Mult(new Num(1), new Num(2)),
+                      new Add(new Num(4), new Num(7)));
+    CHECK(a5->pretty_to_string() == "1 * 2 + 4 + 7");
 
+    Add* a7 = new Add(new Add(n1, n2), new Num(3));
+    CHECK(a7->pretty_to_string() == "(1 + 2) + 3");
+
+    n3 = new Num(3);
+    Add* a8 = new Add(n1, new Add(n2, n3));
+    CHECK(a8->pretty_to_string() == "1 + 2 + 3");
+
+    Add* a9 = new Add(a7, new Num(4));
+    CHECK(a9->pretty_to_string() == "((1 + 2) + 3) + 4");
+
+    Let* l1 = new Let(new Var("y"), new Num(3), new Add(new Var("y"), new Num(2)));
+    CHECK(l1->pretty_to_string() == "_let y = 3\n"
+                                    "_in  y + 2");
+
+    Add* a6 = new Add( new Num(7), l1);
+    CHECK(a6->pretty_to_string() == "7 + _let y = 3\n"
+                                    "    _in  y + 2");
+
+    Let* l2 = new Let(new Var("x"), new Num(5), new Add(new Let(new Var("y"), new Num(3), new Add(new Var("y"), new Num(2))), new Var("x")));
+    CHECK(l2->pretty_to_string() == "_let x = 5\n"
+                                    "_in  (_let y = 3\n"
+                                    "      _in  y + 2) + x");
+
+    Mult* m7 = new Mult(new Num(5), new Let(new Var("x"), new Num(5), new Var("x")));
+    Add* a10 = new Add(m7, new Num(1));
+    CHECK(a10->pretty_to_string() == "5 * (_let x = 5\n"
+                                     "     _in  x) + 1");
+    CHECK(a10->interp() == 26);
+
+    Add* a11 = new Add(new Let(new Var("x"), new Num(5), new Var("x")), new Num(1));
+    CHECK(a11->pretty_to_string() == "(_let x = 5\n"
+                                     " _in  x) + 1");
+
+    Mult* m8 = new Mult(new Num(5), new Let(new Var("x"), new Num(5), new Add(new Var("x"), new Num(1))));
+    CHECK(m8->pretty_to_string() == "5 * _let x = 5\n"
+                                    "    _in  x + 1");
+    CHECK(m8->interp() == 30);
 }
+

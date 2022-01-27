@@ -41,10 +41,10 @@ void Num::print(std::ostream& output) {
     output << this->val;
 }
 void Num::pretty_print(std::ostream &output) {
-    output << this->val;
+    pretty_print_at(output, prec_none, 0, false);
 }
-precedence_t Num::pretty_print_at() {
-    return prec_none;
+void Num::pretty_print_at(std::ostream &output, precedence_t prec, int lastNewLine, bool letParens) {
+    output << this->val;
 }
 
 // Var implementations
@@ -75,10 +75,10 @@ void Var::print(std::ostream &output) {
     output << this->name;
 }
 void Var::pretty_print(std::ostream &output) {
-    output << this->name;
+    pretty_print_at(output, prec_none, 0, false);
 }
-precedence_t Var::pretty_print_at() {
-    return prec_none;
+void Var::pretty_print_at(std::ostream &output, precedence_t prec, int lastNewLine, bool letParens) {
+    output << this->name;
 }
 
 // Add implementations
@@ -112,25 +112,22 @@ void Add::print(std::ostream &output) {
     output << ")";
 }
 void Add::pretty_print(std::ostream &output) {
-    if(lhs->pretty_print_at() == prec_add){
-        output << "(";
-        this->lhs->pretty_print(output);
-        output << ")";
-    } else {
-        this->lhs->pretty_print(output);
-    }
+    lhs->pretty_print_at(output, prec_add, 0, false);
     output << " + ";
-    if(lhs->pretty_print_at() == prec_mult && rhs->pretty_print_at() == prec_add){
+    rhs->pretty_print_at(output, prec_none, 0, true);
+}
+void Add::pretty_print_at(std::ostream &output, precedence_t prec, int lastNewLine, bool letParens) {
+    if(prec > prec_none){
         output << "(";
-        this->rhs->pretty_print(output);
+        lhs->pretty_print_at(output, prec_add, lastNewLine, false);
+        output << " + ";
+        rhs->pretty_print_at(output, prec_add, lastNewLine, false);
         output << ")";
     } else {
-        this->rhs->pretty_print(output);
+        lhs->pretty_print_at(output, prec_add, lastNewLine, false);
+        output << " + ";
+        rhs->pretty_print_at(output, prec_add, lastNewLine, false);
     }
-}
-// if pretty_print_at returns
-precedence_t Add::pretty_print_at() {
-    return prec_add;
 }
 
 // Mult implementations
@@ -163,23 +160,87 @@ void Mult::print(std::ostream &output) {
     output << ")";
 }
 void Mult::pretty_print(std::ostream &output) {
-    if(lhs->pretty_print_at() >= prec_add){
+    lhs->pretty_print_at(output, prec_mult, 0, false);
+    output << " * ";
+    rhs->pretty_print_at(output, prec_add, 0, true);
+}
+void Mult::pretty_print_at(std::ostream &output, precedence_t prec, int lastNewLine, bool letParens) {
+    if(prec == prec_mult){
         output << "(";
-        this->lhs->pretty_print(output);
+        lhs->pretty_print_at(output, prec_mult, lastNewLine, false);
+        output << " * ";
+        rhs->pretty_print_at(output, prec_mult, lastNewLine, false);
         output << ")";
     } else {
-        this->lhs->pretty_print(output);
+        lhs->pretty_print_at(output, prec_mult, lastNewLine, false);
+        output << " * ";
+        rhs->pretty_print_at(output, prec_mult, lastNewLine, false);
     }
-    output << " * ";
-    if(this->rhs->pretty_print_at() == prec_add){
-        output << "(";
-        this->rhs->pretty_print(output);
-        output << ")";
-    } else{
-        this->rhs->pretty_print(output);
-    }
-}
-precedence_t Mult::pretty_print_at() {
-    return prec_mult;
 }
 
+// Let implementations
+Let::Let(Var *lhs, Expr *rhs, Expr *body) {
+    this->lhs = lhs;
+    this->rhs = rhs;
+    this->body = body;
+}
+bool Let::equals(Expr *e) {
+    Let* l = dynamic_cast<Let*>(e);
+    if (l == nullptr)
+        return false;
+    else
+        return (this->lhs->equals(l->lhs)
+                && this->rhs->equals(l->rhs) && this->body->equals(l->body));
+}
+int Let::interp() {
+    Expr* temp = body->subst(lhs->name, rhs);
+    return temp->interp();
+}
+bool Let::has_variable() {
+    return rhs->has_variable() || body->has_variable();
+}
+Expr *Let::subst(std::string to_replace, Expr *substitute_expr) {
+    // if the name of the var to replace is the same as the current lhs of this Let, only subst on the rhs, as the body var is bound. Else, subst on the rhs and the body.
+    if(this->lhs->name == to_replace){
+        return new Let(this->lhs, rhs->subst(to_replace, substitute_expr), this->body);
+    } else {
+        return new Let(this->lhs, this->rhs->subst(to_replace, substitute_expr), this->body->subst(to_replace, substitute_expr));
+    }
+}
+void Let::print(std::ostream &output) {
+    output << "(_let " << this->lhs->name << "=" << this->rhs->to_string() << " _in " << this->body->to_string() << ")";
+}
+void Let::pretty_print(std::ostream &output) {
+    pretty_print_at(output, prec_none, 0, true);
+}
+void Let::pretty_print_at(std::ostream &output, precedence_t prec, int lastNewLine, bool letParens) {
+    int numSpaces = (int)output.tellp() - lastNewLine;
+    if(prec > prec_none && !letParens){
+        std::string spaces(numSpaces+1, ' ');
+        output << "(_let ";
+        lhs->pretty_print_at(output, prec_none, lastNewLine, false);
+        output << " = ";
+        rhs->pretty_print_at(output, prec_none, lastNewLine, false);
+        int tempLastNewLine = (int)output.tellp();
+        output << "\n" << spaces << "_in  ";
+        body->pretty_print_at(output, prec_none, tempLastNewLine, false);
+        output << ")";
+    } else {
+        std::string spaces(numSpaces, ' ');
+        output << "_let ";
+        lhs->pretty_print_at(output, prec_none, lastNewLine, false);
+        output << " = ";
+        rhs->pretty_print_at(output, prec_none, lastNewLine, false);
+        int tempLastNewLine = (int)output.tellp()+1;
+        output << "\n" << spaces << "_in  ";
+        body->pretty_print_at(output, prec_none, tempLastNewLine, false);
+    }
+}
+
+// Helper functions
+void printExpr(Expr* e){
+    std::cout << e->to_string() << std::endl;
+}
+void printPrettyExpr(Expr* e){
+    std::cout << e->pretty_to_string() << std::endl;
+}

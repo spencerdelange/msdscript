@@ -3,7 +3,6 @@
  */
 
 #include "msdscript.h"
-#include "test.h"
 
 int main(int argc, char* argv[]) {
     use_arguments(argc, argv);
