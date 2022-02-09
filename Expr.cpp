@@ -236,7 +236,6 @@ void Let::pretty_print_at(std::ostream &output, precedence_t prec, int lastNewLi
         body->pretty_print_at(output, prec_none, tempLastNewLine, false);
     }
 }
-
 // Helper functions
 void printExpr(Expr* e){
     std::cout << e->to_string() << std::endl;

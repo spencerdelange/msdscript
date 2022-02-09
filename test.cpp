@@ -6,6 +6,7 @@
 #include "catch.h"
 #include "test.h"
 #include "Expr.h"
+#include "msdscript.h"
 
 int test(char* argv[]){
     return Catch::Session().run(1, argv);
@@ -240,3 +241,27 @@ TEST_CASE("pretty_print"){
     CHECK(m8->interp() == 30);
 }
 
+TEST_CASE("parse"){
+    CHECK(parse_str("5")->interp() == 5);
+    CHECK(parse_str("-5")->interp() == -5);
+    CHECK(parse_str("5 + 2")->interp() == 7);
+    CHECK(parse_str("5 + -10")->interp() == -5);
+    CHECK(parse_str("    5 + 2")->interp() == 7);
+    CHECK(parse_str("4 * 2")->interp() == 8);
+    CHECK(parse_str("(4 * 2)")->interp() == 8);
+    CHECK(parse_str("2 * 2 + 3")->interp() == 7);
+    CHECK(parse_str("2 * (2 + 3)")->interp() == 10);
+    CHECK(parse_str("(4)")->interp() == 4);
+
+    CHECK(parse_str("this")->pretty_to_string() == "this");
+    CHECK(parse_str("this    ")->pretty_to_string() == "this");
+    CHECK(parse_str("     this")->pretty_to_string() == "this");
+
+    CHECK(parse_str("this + that")->pretty_to_string() == "this + that");
+
+    CHECK(parse_str("_let x = 4 _in x + -2")->interp() == 2);
+    CHECK(parse_str("_let x = 4 _in x + -2")->pretty_to_string() ==
+    "_let x = 4\n_in  x + -2");
+    CHECK(parse_str("_let x = 4 _in x + -2")->to_string() == "(_let x=4 _in (x+-2))");
+    CHECK_THROWS_WITH(parse_str("_lt x = 4 _in x + -2")->interp(), "invalid input for '_let'");
+}
