@@ -7,6 +7,11 @@
 #include "Expr.h"
 #include "test.h"
 
+int main(int argc, char* argv[]) {
+    use_arguments(argc, argv);
+    return 0;
+}
+
 void use_arguments(int argc, char* argv[]){
     string argvArr[argc];
     for(int i = 0; i < argc; i++){

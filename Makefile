@@ -18,3 +18,6 @@ msdscript.o: $(INCS)
 test.o: $(INCS)
 
 Expr.o: $(INCS)
+
+clean:
+	rm -f *~ *.o msdscript
