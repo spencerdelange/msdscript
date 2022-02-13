@@ -102,6 +102,11 @@ ExecResult exec_program(int argc, const char * const *argv, std::string input) {
   }
 }
 
+std::ostream &operator<<(std::ostream &os, const ExecResult &result) {
+    os << "exit_code: " << result.exit_code << " out: " << result.out << " err: " << result.err;
+    return os;
+}
+
 // Enable/disable nonblocking mode for a file descriptor
 static void nonblocking(int fd, bool enabled) {
   int old_flags = fcntl(fd, F_GETFL, 0);

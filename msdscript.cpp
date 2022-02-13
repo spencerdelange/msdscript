@@ -8,10 +8,15 @@
 #include "test.h"
 
 int main(int argc, char* argv[]) {
-    use_arguments(argc, argv);
-    return 0;
+    try{
+        use_arguments(argc, argv);
+        return 0;
+    }
+    catch(exception& e){
+        cerr << e.what() << endl;
+        return 1;
+    }
 }
-
 void use_arguments(int argc, char* argv[]){
     string argvArr[argc];
     for(int i = 0; i < argc; i++){
@@ -22,20 +27,19 @@ void use_arguments(int argc, char* argv[]){
             help();
         } else if(argvArr[i] == "--test"){
             if(test(argv) != 0)
-                exit(1);
-            exit(0);
+                throw logic_error("Tests failed");
+            break;
         } else if(argvArr[i] == "--interp"){
             cout << parse_expr(cin)->interp() << endl;
-            exit(0);
+            break;
         } else if(argvArr[i] == "--print"){
             printExpr(parse_expr(cin));
-            exit(0);
+            break;
         } else if(argvArr[i] == "--pretty-print"){
             printPrettyExpr(parse_expr(cin));
-            exit(0);
+            break;
         } else{
-            cerr << "ERROR: invalid command" << endl;
-            exit(1);
+            throw invalid_argument("Invalid command");
         }
     }
 }

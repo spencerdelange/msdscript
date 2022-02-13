@@ -2,6 +2,7 @@
 #define exec_hpp
 
 #include <string>
+#include <ostream>
 
 class ExecResult {
 public:
@@ -13,6 +14,8 @@ public:
     out = "";
     err = "";
   }
+
+    friend std::ostream &operator<<(std::ostream &os, const ExecResult &result);
 };
 
 extern ExecResult exec_program(int argc, const char * const *argv, std::string input);

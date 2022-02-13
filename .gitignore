@@ -46,3 +46,4 @@ CMakeLists.txt
 out/
 cmake-build-debug/
 cmake-build-debug-coverage/
+exec_examples/
