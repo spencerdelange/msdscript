@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <iostream>
 #include "Expr.h"
+#include "Val.h"
 
 using namespace std;
 // calls the appropriate function based on the order and input given
@@ -20,11 +21,11 @@ Expr *parse_num(std::istream &in);
 Expr *parse_str(std::string s);
 // When given an istream containing an addend (multicand or multicand * addend), return an Expr representing the addend
 Expr *parse_addend(std::istream &in);
-// When given an istream containing a multicand (number, expr in parens, variable or Let), return an Expr representing the multicand
+// When given an istream containing a multicand (number, expr in parens, variable or LetExpr), return an Expr representing the multicand
 Expr *parse_multicand(std::istream &in);
 // When given an istream containing a variable, return an Expr representing the variable
 Expr *parse_var(std::istream &in);
-// When given an istream containing a Let, return an Expr representing the Let
+// When given an istream containing a LetExpr, return an Expr representing the LetExpr
 Expr *parse_let(std::istream &in);
 // Checks whether if next work in the istream matches the expected string. If not, throw an error.
 void parse_keyword(std::istream &in, const string& expected);

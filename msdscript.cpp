@@ -62,7 +62,7 @@ static Expr *parse_expr(std::istream &in) {
     if (c == '+') {
         consume(in, '+');
         Expr *rhs = parse_expr(in);
-        return new Add(e, rhs);
+        return new AddExpr(e, rhs);
     } else
         return e;
 }
@@ -74,7 +74,7 @@ Expr *parse_addend(std::istream &in){
     if(c == '*'){
         consume(in, '*');
         Expr* rhs = parse_addend(in);
-        return new Mult(e, rhs);
+        return new MultExpr(e, rhs);
     } else
         return e;
 }
@@ -121,13 +121,13 @@ Expr *parse_num(std::istream &in) {
     }
     if (negative)
         n = -n;
-    return new Num(n);
+    return new NumExpr(n);
 }
 Expr *parse_let(std::istream &in){
     parse_keyword(in, "_let");
     // verify that the next expression is a variable
     Expr* e = parse_expr(in);
-    Var* lhs = dynamic_cast<Var*>(e);
+    VarExpr* lhs = dynamic_cast<VarExpr*>(e);
     if(lhs == nullptr)
         throw std::runtime_error("invalid input");
 
@@ -139,12 +139,12 @@ Expr *parse_let(std::istream &in){
     skip_whitespace(in);
     parse_keyword(in, "_in");
     Expr* body = parse_expr(in);
-    return new Let(lhs, rhs, body);
+    return new LetExpr(lhs, rhs, body);
 }
 Expr *parse_var(std::istream &in){
     string varName;
     in >> varName;
-    return new Var(varName);
+    return new VarExpr(varName);
 }
 void parse_keyword(std::istream &in, const string& expected){
     string keyword;

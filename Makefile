@@ -1,9 +1,11 @@
-INCS = msdscript.h catch.h Expr.h test.h
+# Flags
+INCS = msdscript.h catch.h Expr.h test.h Val.h
 
-OBJS = msdscript.o test.o Expr.o
+OBJS = msdscript.o test.o Expr.o Val.o
 
 CXXFLAGS = --std=c++14 -O2
 
+# make default, makes msdscript
 msdscript: $(OBJS)
 	$(CXX) $(CXXFLAGS) -o msdscript $(OBJS)
 
@@ -17,13 +19,13 @@ test.o: $(INCS)
 
 Expr.o: $(INCS)
 
-# Remove output files and executables
+Val.o: $(INCS)
 
+# Remove output files and executables
 clean:
 	rm -f *~ *.o msdscript test_msdscript test_msdscript_project/test_msdscript.o
 
 # test_msdscript makefile
-
 test_msdscript: test_msdscript_project/test_msdscript.o test_msdscript_project/exec.o
 	$(CXX) $(CXXFLAGS) -o test_msdscript test_msdscript_project/test_msdscript.o test_msdscript_project/exec.o
 
