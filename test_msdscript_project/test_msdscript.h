@@ -16,7 +16,7 @@ void testTwoPrograms(const char *msdscriptPath1, const char *msdscriptPath2);
 // Checks the error code of a given ExecResult and prints an error message if it's an error
 void checkErrCode(const ExecResult& result, const std::string& command);
 // Compares two ExecResult objects to see if the output is the same.
-void checkTwoProgramResults(const ExecResult& result1, const ExecResult& result2, const std::string& path1, const std::string& path2);
+void checkTwoProgramResults(std::string input, std::string test, const ExecResult& result1, const ExecResult& result2, const std::string& path1, const std::string& path2);
 // Loops through the msdscripts with broken implementations
 void testBrokenImplementations();
 

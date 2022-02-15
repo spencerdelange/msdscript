@@ -13,6 +13,7 @@ using namespace std;
 
 int main(int argc, char *argv[]) {
     testBrokenImplementations();
+
     srand(time(nullptr));
     if(argc == 1 || argc > 3){
         cout << "Enter a path to an msdscript program to test implementation." << endl;
@@ -63,17 +64,18 @@ void testTwoPrograms(const char *msdscriptPath1, const char *msdscriptPath2) {
     const char * const interp_argv2[] = { msdscriptPath2, "--interp" };
     const char * const print_argv2[] = { msdscriptPath2, "--print" };
     const char * const pretty_print_argv2[] = { msdscriptPath2, "--pretty-print" };
+    
+    for (int i = 0; i < 1; i++) {
+        string interpInput = random_expr_string(false);
+        string printsInput = random_expr_string(true);
 
+        ExecResult interp_result1 = exec_program(2, interp_argv1, interpInput);
+        ExecResult print_result1 = exec_program(2, print_argv1, printsInput);
+        ExecResult pretty_print_result1 = exec_program(2, pretty_print_argv1, printsInput);
 
-
-    for (int i = 0; i < 10; i++) {
-        ExecResult interp_result1 = exec_program(2, interp_argv1, random_expr_string(false));
-        ExecResult print_result1 = exec_program(2, print_argv1, random_expr_string(true));
-        ExecResult pretty_print_result1 = exec_program(2, pretty_print_argv1, random_expr_string(true));
-
-        ExecResult interp_result2 = exec_program(2, interp_argv2, random_expr_string(false));
-        ExecResult print_result2 = exec_program(2, print_argv2, random_expr_string(true));
-        ExecResult pretty_print_result2 = exec_program(2, pretty_print_argv2, random_expr_string(true));
+        ExecResult interp_result2 = exec_program(2, interp_argv2, interpInput);
+        ExecResult print_result2 = exec_program(2, print_argv2, printsInput);
+        ExecResult pretty_print_result2 = exec_program(2, pretty_print_argv2, printsInput);
 
         checkErrCode(interp_result1, "--interp");
         checkErrCode(print_result1, "--print");
@@ -82,18 +84,18 @@ void testTwoPrograms(const char *msdscriptPath1, const char *msdscriptPath2) {
         checkErrCode(print_result2, "--print");
         checkErrCode(pretty_print_result2, "--pretty-print");
 
-        checkTwoProgramResults(interp_result1, interp_result2, interp_argv1[0], interp_argv2[0]);
-        checkTwoProgramResults(print_result1, print_result2, print_argv1[0], print_argv2[0]);
-        checkTwoProgramResults(pretty_print_result2, pretty_print_result1, pretty_print_argv1[0], pretty_print_argv2[0]);
+        checkTwoProgramResults(interpInput,"--interp", interp_result1, interp_result2, interp_argv1[0], interp_argv2[0]);
+        checkTwoProgramResults(printsInput,"--print", print_result1, print_result2, print_argv1[0], print_argv2[0]);
+        checkTwoProgramResults(printsInput, "--pretty-print", pretty_print_result1, pretty_print_result2, pretty_print_argv1[0], pretty_print_argv2[0]);
     }
 }
-void checkTwoProgramResults(const ExecResult& result1, const ExecResult& result2, const std::string& path1, const std::string& path2) {
+void checkTwoProgramResults(std::string input, std::string test, const ExecResult& result1, const ExecResult& result2, const std::string& path1, const std::string& path2) {
     if(result1.out != result2.out){
-        std::cerr << "msdscript results do not match in: " << endl;
+        std::cerr << "msdscript results do not match in: " << test << " with input: " << input << endl;
         std::cerr << "Program one path: " << path1 << endl;
-        std::cerr << "Program one output: " << result1.out << endl;
+        std::cerr << "Program one output: \n" << result1.out << endl;
         std::cerr << "Program two path: " << path2 << endl;
-        std::cerr << "Program two output: " << result2.out << endl;
+        std::cerr << "Program two output: \n" << result2.out << endl;
     }
 }
 void checkErrCode(const ExecResult& result, const std::string& command){

@@ -30,7 +30,7 @@ void use_arguments(int argc, char* argv[]){
                 throw logic_error("Tests failed");
             break;
         } else if(argvArr[i] == "--interp"){
-            cout << parse_expr(cin)->interp() << endl;
+            cout << parse_expr(cin)->interp()->to_string() << endl;
             break;
         } else if(argvArr[i] == "--print"){
             printExpr(parse_expr(cin));

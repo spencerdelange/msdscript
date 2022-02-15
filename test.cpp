@@ -73,6 +73,10 @@ TEST_CASE("interp tests") {
     LetExpr* l7 = new LetExpr(new VarExpr("y"), new NumExpr(6), new AddExpr(new VarExpr("x"), new NumExpr(1)));
     LetExpr* l8 = new LetExpr(new VarExpr("x"), new NumExpr(5), l7);
     CHECK(l8->interp()->equals(new NumVal(6)));
+
+    Expr* expr = parse_str("290389230");
+    cout << expr->interp()->to_string() << endl;
+
 }
 TEST_CASE("has_variable tests"){
     AddExpr* a1 = new AddExpr(new NumExpr(3), new VarExpr("a"));
