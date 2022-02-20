@@ -63,6 +63,28 @@ public:
     void pretty_print_at(std::ostream &output, precedence_t prec, int lastNewLine, bool letParens) override;
 };
 
+// Expr subclass representing a boolean in an expression
+class BoolExpr : public Expr {
+public:
+    bool rep;
+    // Constructs a BoolExpr object with a value of given rep
+    explicit BoolExpr(bool rep);
+    // Returns whether this is equal to a given Expr object
+    bool equals(Expr *e) override;
+    // Returns the value of this number
+    Val * interp() override;
+    // Returns whether expression has a variable
+    bool has_variable() override;
+    // substitutes a variable in an expression with a given variable
+    Expr* subst(std::string to_replace, Expr* substitute_expr) override;
+    // Print's this BoolExpr's value to a given std::ostream&
+    void print(std::ostream& output) override;
+    // Prints this BoolExpr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
+    void pretty_print(std::ostream& output) override;
+    // Prints this BoolExpr to output. Preceding expression, the integer place of the last newline is given and a boolean of whether _let needs parentheses is given.
+    void pretty_print_at(std::ostream &output, precedence_t prec, int lastNewLine, bool letParens) override;
+};
+
 // Expr subclass representing a variable in an expression
 class VarExpr : public Expr {
 public:
@@ -82,6 +104,29 @@ public:
     // Prints this VarExpr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
     void pretty_print(std::ostream& output) override;
     // Prints this VarExpr to output. Preceding expression, the integer place of the last newline is given and a boolean of whether _let needs parentheses is given.
+    void pretty_print_at(std::ostream &output, precedence_t prec, int lastNewLine, bool letParens) override;
+};
+
+// Expr subclass representing an equals '==' expression
+class EqExpr : public Expr {
+public:
+    Expr *lhs;
+    Expr *rhs;
+    // Constructor
+    EqExpr(Expr *lhs, Expr *rhs);
+    // Returns whether this is equal to a given Expr
+    bool equals(Expr *e) override;
+    // Returns the value of this addition Expr
+    Val * interp() override;
+    // Returns whether expression has a variable
+    bool has_variable() override;
+    // substitutes a variable in an expression with a given variable
+    Expr* subst(std::string to_replace, Expr* substitute_expr) override;
+    // Print's this EqExpr's string representation to a given std::ostream&
+    void print(std::ostream& output) override;
+    // Prints this EqExpr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
+    void pretty_print(std::ostream& output) override;
+    // Prints this EqExpr to output. Preceding expression, the integer place of the last newline is given and a boolean of whether _let needs parentheses is given.
     void pretty_print_at(std::ostream &output, precedence_t prec, int lastNewLine, bool letParens) override;
 };
 
@@ -154,6 +199,33 @@ public:
     // Prints this LetExpr to output. Preceding expression, the integer place of the last newline is given and a boolean of whether _let needs parentheses is given.
     void pretty_print_at(std::ostream &output, precedence_t prec, int lastNewLine, bool letParens) override;
 };
+
+// Expr subclass representing an 'if, then, else' expression
+class IfExpr : public Expr {
+public:
+    Expr *_if;
+    Expr *_then;
+    Expr *_else;
+    // Constructor
+    IfExpr(Expr* _if, Expr* _then, Expr* _else);
+    // Returns whether this is equal to a given Expr
+    bool equals(Expr *e) override;
+    // Returns the value of this let Expr
+    Val * interp() override;
+    // Returns whether expression has a variable
+    bool has_variable() override;
+    // substitutes a variable in an expression with a given variable
+    Expr* subst(std::string to_replace, Expr* substitute_expr) override;
+    // Print's this IfExpr's string representation to a given std::ostream&
+    void print(std::ostream& output) override;
+    // Prints this IfExpr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
+    void pretty_print(std::ostream& output) override;
+    // Prints this IfExpr to output. Preceding expression, the integer place of the last newline is given and a boolean of whether _let needs parentheses is given. True means _let doesn't need parentheses
+    void pretty_print_at(std::ostream &output, precedence_t prec, int lastNewLine, bool letParens) override;
+};
+
+
+
 // Helper function that prints the given expression's to_string to std::cout
 void printExpr(Expr* e);
 // Helper function that prints the given expression's pretty_to_string to std::cout

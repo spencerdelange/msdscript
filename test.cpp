@@ -73,10 +73,6 @@ TEST_CASE("interp tests") {
     LetExpr* l7 = new LetExpr(new VarExpr("y"), new NumExpr(6), new AddExpr(new VarExpr("x"), new NumExpr(1)));
     LetExpr* l8 = new LetExpr(new VarExpr("x"), new NumExpr(5), l7);
     CHECK(l8->interp()->equals(new NumVal(6)));
-
-    Expr* expr = parse_str("290389230");
-    cout << expr->interp()->to_string() << endl;
-
 }
 TEST_CASE("has_variable tests"){
     AddExpr* a1 = new AddExpr(new NumExpr(3), new VarExpr("a"));
@@ -269,11 +265,12 @@ TEST_CASE("parse"){
 
     CHECK(parse_str("this + that")->pretty_to_string() == "this + that");
 
+    //
     CHECK(parse_str("_let x = 4 _in x + -2")->interp()->equals(new NumVal(2)));
     CHECK(parse_str("_let x = 4 _in x + -2")->pretty_to_string() ==
     "_let x = 4\n_in  x + -2");
     CHECK(parse_str("_let x = 4 _in x + -2")->to_string() == "(_let x=4 _in (x+-2))");
-    CHECK_THROWS_WITH(parse_str("_lt x = 4 _in x + -2")->interp(), "invalid input for '_let'");
+    CHECK_THROWS_WITH(parse_str("_lt x = 4 _in x + -2")->interp(), "invalid input");
 }
 
 TEST_CASE("Val Tests"){
@@ -287,4 +284,26 @@ TEST_CASE("Val Tests"){
     CHECK(n1->to_expr()->equals(new NumExpr(2)));
     CHECK(n1->add_to(new NumVal(4))->equals(new NumVal(6)));
     CHECK(n1->mult_to(new NumVal(4))->equals(new NumVal(8)));
+}
+
+TEST_CASE("Refactor Tests"){
+    CHECK(run("2 == 2") == "_true");
+    CHECK(run("2 == 3") == "_false");
+    CHECK((run("_let same = 1 == 2\n"
+        "_in  _if 1 == 2\n"
+        "     _then _false + 5\n"
+        "     _else 88")) == "88");
+
+    CHECK(parse_str("_let same = 1 == 2\n"
+                    "_in  _if 1 == 2\n"
+                    "     _then _false + 5\n"
+                    "     _else 88")->pretty_to_string() == "_let same = 1 == 2\n"
+                                                            "_in  _if 1 == 2\n"
+                                                            "     _then _false + 5\n"
+                                                            "     _else 88");
+    CHECK_THROWS_WITH(run("_if 4 + 1\n"
+              "_then 2\n"
+              "_else 3"), "NumVal cannot be true or false");
+
+
 }

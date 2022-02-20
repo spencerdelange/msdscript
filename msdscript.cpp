@@ -30,18 +30,31 @@ void use_arguments(int argc, char* argv[]){
                 throw logic_error("Tests failed");
             break;
         } else if(argvArr[i] == "--interp"){
-            cout << parse_expr(cin)->interp()->to_string() << endl;
+            istringstream str = getEntireInput(cin);
+            string interpMe = parse_expr(str)->interp()->to_string();
+            cout << interpMe << endl;
             break;
         } else if(argvArr[i] == "--print"){
-            printExpr(parse_expr(cin));
+            istringstream str = getEntireInput(cin);
+            printExpr(parse_expr(str));
             break;
         } else if(argvArr[i] == "--pretty-print"){
-            printPrettyExpr(parse_expr(cin));
+            istringstream str = getEntireInput(cin);
+            printPrettyExpr(parse_expr(str));
             break;
         } else{
             throw invalid_argument("Invalid command");
         }
     }
+}
+static istringstream getEntireInput(std::istream &in){
+    string toReturn;
+    string temp;
+    while(std::getline(cin, temp)){
+        toReturn+=temp;
+    }
+    istringstream str(toReturn);
+    return str;
 }
 void help(){
     cout << "Welcome to MSDScript!\n"
@@ -56,6 +69,26 @@ void help(){
 }
 static Expr *parse_expr(std::istream &in) {
     Expr *e;
+    e = parse_comparg(in);
+    skip_whitespace(in);
+    int c = in.peek();
+    if (c == '=') {
+        int currPos = (int)in.tellg();
+        consume(in, '=');
+        c = in.peek();
+        if(c == '='){
+            consume(in, '=');
+            Expr *rhs = parse_expr(in);
+            return new EqExpr(e, rhs);
+        } else {
+            in.seekg(currPos);
+            return e;
+        }
+    } else
+        return e;
+}
+Expr *parse_comparg(std::istream &in){
+    Expr *e;
     e = parse_addend(in);
     skip_whitespace(in);
     int c = in.peek();
@@ -66,6 +99,7 @@ static Expr *parse_expr(std::istream &in) {
     } else
         return e;
 }
+
 Expr *parse_addend(std::istream &in){
     Expr* e;
     e = parse_multicand(in);
@@ -98,7 +132,18 @@ Expr *parse_multicand(std::istream &in) {
         return parse_var(in);
     // if c is an underscore, parse it as a let
     } else if(c == '_'){
-        return parse_let(in);
+        string keyword;
+        in >> keyword;
+        if(keyword == "_let")
+            return parse_let(in);
+        else if(keyword == "_if")
+            return parse_if(in);
+        else if(keyword == "_false")
+            return new BoolExpr(false);
+        else if(keyword == "_true")
+            return new BoolExpr(true);
+        else
+            throw std::runtime_error("invalid input");
     } else {
         consume(in, c);
         throw std::runtime_error("invalid input");
@@ -123,21 +168,38 @@ Expr *parse_num(std::istream &in) {
         n = -n;
     return new NumExpr(n);
 }
+Expr *parse_if(std::istream &in){
+    Expr* _if = parse_expr(in);
+
+    skip_whitespace(in);
+    if(!parse_keyword(in, "_then"))
+        throw std::runtime_error("invalid input for '_if'");
+
+    Expr* _then = parse_expr(in);
+
+    skip_whitespace(in);
+    if(!parse_keyword(in, "_else"))
+        throw std::runtime_error("invalid input for '_if'");
+
+    Expr* _else = parse_expr(in);
+    return new IfExpr(_if, _then, _else);
+}
 Expr *parse_let(std::istream &in){
-    parse_keyword(in, "_let");
-    // verify that the next expression is a variable
     Expr* e = parse_expr(in);
     VarExpr* lhs = dynamic_cast<VarExpr*>(e);
     if(lhs == nullptr)
-        throw std::runtime_error("invalid input");
+        throw std::runtime_error("invalid input for '_let'");
 
     skip_whitespace(in);
-    parse_keyword(in, "=");
+    if(!parse_keyword(in, "="))
+        throw std::runtime_error("invalid input for '_let'");
+
 
     Expr* rhs = parse_expr(in);
 
     skip_whitespace(in);
-    parse_keyword(in, "_in");
+    if(!parse_keyword(in, "_in"))
+        throw std::runtime_error("invalid input for '_let'");
     Expr* body = parse_expr(in);
     return new LetExpr(lhs, rhs, body);
 }
@@ -146,15 +208,23 @@ Expr *parse_var(std::istream &in){
     in >> varName;
     return new VarExpr(varName);
 }
-void parse_keyword(std::istream &in, const string& expected){
+Expr *parse_bool(std::istream &in){
+    string boolStr;
+    in >> boolStr;
+    if(boolStr=="_true")
+        return new BoolExpr(true);
+    else
+        return new BoolExpr(false);
+}
+bool parse_keyword(std::istream &in, const string& expected){
     string keyword;
     in >> keyword;
-    if(keyword != expected)
-        throw std::runtime_error("invalid input for '_let'");
+    return keyword == expected;
 }
 Expr* parse_str(std::string s){
     istringstream str(s);
-    return parse_expr(str);
+    Expr* e = parse_expr(str);
+    return e;
 }
 static void consume(std::istream &in, int expect) {
     int c = in.get();

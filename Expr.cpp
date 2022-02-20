@@ -6,7 +6,9 @@
 #include "Expr.h"
 #include "Val.h"
 
-// Expr implementations
+//////////////////////////////
+//// Expr implementations ////
+//////////////////////////////
 std::string Expr::to_string() {
     std::stringstream out("");
     this->print(out);
@@ -18,7 +20,9 @@ std::string Expr::pretty_to_string() {
     return out.str();
 }
 
-// NumExpr implementations
+/////////////////////////////////
+//// NumExpr implementations ////
+/////////////////////////////////
 NumExpr::NumExpr(int rep) {
     this->rep = rep;
 }
@@ -48,7 +52,47 @@ void NumExpr::pretty_print_at(std::ostream &output, precedence_t prec, int lastN
     output << this->rep;
 }
 
-// VarExpr implementations
+//////////////////////////////////
+//// BoolExpr implementations ////
+//////////////////////////////////
+BoolExpr::BoolExpr(bool rep){
+    this->rep = rep;
+}
+bool BoolExpr::equals(Expr *e){
+    BoolExpr *v = dynamic_cast<BoolExpr*>(e);
+    if (v == nullptr)
+        return false;
+    else
+        return (this->rep == v->rep);
+}
+Val * BoolExpr::interp() {
+    return new BoolVal(rep);
+}
+bool BoolExpr::has_variable() {
+    return true;
+}
+Expr *BoolExpr::subst(std::string to_replace, Expr* substitute_expr) {
+    return this;
+}
+void BoolExpr::print(std::ostream &output) {
+    if(this->rep)
+        output << "_true";
+    else
+        output << "_false";
+}
+void BoolExpr::pretty_print(std::ostream &output) {
+    pretty_print_at(output, prec_none, 0, false);
+}
+void BoolExpr::pretty_print_at(std::ostream &output, precedence_t prec, int lastNewLine, bool letParens) {
+    if(this->rep)
+        output << "_true";
+    else
+        output << "_false";
+}
+
+/////////////////////////////////
+//// VarExpr implementations ////
+/////////////////////////////////
 VarExpr::VarExpr(std::string name){
     this->name = name;
 }
@@ -82,7 +126,60 @@ void VarExpr::pretty_print_at(std::ostream &output, precedence_t prec, int lastN
     output << this->name;
 }
 
-// AddExpr implementations
+/////////////////////////////////
+//// EqExpr implementations ////
+/////////////////////////////////
+EqExpr::EqExpr(Expr *lhs, Expr *rhs) {
+    this->lhs = lhs;
+    this->rhs = rhs;
+}
+bool EqExpr::equals(Expr *e) {
+    EqExpr*a = dynamic_cast<EqExpr*>(e);
+    if (a == nullptr)
+        return false;
+    else
+        return (this->lhs->equals(a->lhs)
+                && this->rhs->equals(a->rhs));
+}
+Val * EqExpr::interp() {
+    return new BoolVal(lhs->equals(rhs));
+}
+bool EqExpr::has_variable() {
+    return this->lhs->has_variable() || this->rhs->has_variable();
+}
+Expr *EqExpr::subst(std::string to_replace, Expr *substitute_expr) {
+    EqExpr* temp = new EqExpr(lhs->subst(to_replace, substitute_expr), rhs->subst(to_replace, substitute_expr));
+    return temp;
+}
+void EqExpr::print(std::ostream &output) {
+    output << "(";
+    this->lhs->print(output);
+    output << "==";
+    this->rhs->print(output);
+    output << ")";
+}
+void EqExpr::pretty_print(std::ostream &output) {
+    lhs->pretty_print_at(output, prec_none, 0, false);
+    output << " == ";
+    rhs->pretty_print_at(output, prec_none, 0, false);
+}
+void EqExpr::pretty_print_at(std::ostream &output, precedence_t prec, int lastNewLine, bool letParens) {
+    if(prec > prec_none){
+        output << "(";
+        lhs->pretty_print_at(output, prec_none, lastNewLine, false);
+        output << " == ";
+        rhs->pretty_print_at(output, prec_none, lastNewLine, false);
+        output << ")";
+    } else {
+        lhs->pretty_print_at(output, prec_none, lastNewLine, false);
+        output << " == ";
+        rhs->pretty_print_at(output, prec_none, lastNewLine, false);
+    }
+}
+
+/////////////////////////////////
+//// AddExpr implementations ////
+/////////////////////////////////
 AddExpr::AddExpr(Expr *lhs, Expr *rhs) {
     this->lhs = lhs;
     this->rhs = rhs;
@@ -131,7 +228,9 @@ void AddExpr::pretty_print_at(std::ostream &output, precedence_t prec, int lastN
     }
 }
 
-// MultExpr implementations
+//////////////////////////////////
+//// MultExpr implementations ////
+//////////////////////////////////
 MultExpr::MultExpr(Expr *lhs, Expr *rhs) {
     this->lhs = lhs;
     this->rhs = rhs;
@@ -179,7 +278,70 @@ void MultExpr::pretty_print_at(std::ostream &output, precedence_t prec, int last
     }
 }
 
-// LetExpr implementations
+/////////////////////////////////
+//// IfExpr implementations ////
+/////////////////////////////////
+IfExpr::IfExpr(Expr* _if, Expr* _then, Expr* _else) {
+    this->_if = _if;
+    this->_then = _then;
+    this->_else = _else;
+}
+bool IfExpr::equals(Expr *e) {
+    IfExpr* l = dynamic_cast<IfExpr*>(e);
+    if (l == nullptr)
+        return false;
+    else
+        return (this->_if->equals(l->_if)
+                && this->_then->equals(l->_then) && this->_else->equals(l->_else));
+}
+Val * IfExpr::interp() {
+    if(_if->interp()->is_true())
+        return _then->interp();
+    else
+        return _else->interp();
+}
+bool IfExpr::has_variable() {
+    return _then->has_variable() || _else->has_variable();
+}
+Expr *IfExpr::subst(std::string to_replace, Expr *substitute_expr) {
+    IfExpr* temp = new IfExpr(_if->subst(to_replace, substitute_expr), _then->subst(to_replace, substitute_expr), _else->subst(to_replace, substitute_expr));
+    return temp;
+}
+void IfExpr::print(std::ostream &output) {
+    output << "(_if " << this->_if->to_string() << " _then " << this->_then->to_string() << " _else " << this->_else->to_string() << ")";
+}
+void IfExpr::pretty_print(std::ostream &output) {
+    pretty_print_at(output, prec_none, 0, true);
+}
+void IfExpr::pretty_print_at(std::ostream &output, precedence_t prec, int lastNewLine, bool letParens) {
+    int numSpaces = (int)output.tellp() - lastNewLine;
+    if(prec > prec_none && !letParens){
+        std::string spaces(numSpaces+1, ' ');
+        output << "(_if ";
+        _if->pretty_print_at(output, prec_none, lastNewLine, false);
+        output << "\n" << spaces << "_then ";
+        int tempLastNewLine = (int)output.tellp();
+        _then->pretty_print_at(output, prec_none, tempLastNewLine, false);
+        output << "\n" << spaces << "_else ";
+        tempLastNewLine = (int)output.tellp();
+        _else->pretty_print_at(output, prec_none, tempLastNewLine, false);
+        output << ")";
+    } else {
+        std::string spaces(numSpaces, ' ');
+        output << "_if ";
+        _if->pretty_print_at(output, prec_none, lastNewLine, false);
+        output << "\n" << spaces << "_then ";
+        int tempLastNewLine = (int)output.tellp();
+        _then->pretty_print_at(output, prec_none, tempLastNewLine, false);
+        output << "\n" << spaces << "_else ";
+        tempLastNewLine = (int)output.tellp();
+        _else->pretty_print_at(output, prec_none, tempLastNewLine, false);
+    }
+}
+
+/////////////////////////////////
+//// LetExpr implementations ////
+/////////////////////////////////
 LetExpr::LetExpr(VarExpr *lhs, Expr *rhs, Expr *body) {
     this->lhs = lhs;
     this->rhs = rhs;
@@ -237,7 +399,10 @@ void LetExpr::pretty_print_at(std::ostream &output, precedence_t prec, int lastN
         body->pretty_print_at(output, prec_none, tempLastNewLine, false);
     }
 }
-// Helper functions
+
+//////////////////////////
+//// Helper Functions ////
+//////////////////////////
 void printExpr(Expr* e){
     std::cout << e->to_string() << std::endl;
 }

@@ -64,7 +64,7 @@ void testTwoPrograms(const char *msdscriptPath1, const char *msdscriptPath2) {
     const char * const interp_argv2[] = { msdscriptPath2, "--interp" };
     const char * const print_argv2[] = { msdscriptPath2, "--print" };
     const char * const pretty_print_argv2[] = { msdscriptPath2, "--pretty-print" };
-    
+
     for (int i = 0; i < 1; i++) {
         string interpInput = random_expr_string(false);
         string printsInput = random_expr_string(true);
