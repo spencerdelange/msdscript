@@ -23,12 +23,16 @@ Expr *parse_str(std::string s);
 Expr *parse_comparg(std::istream &in);
 // When given an istream containing an addend (multicand or multicand * addend), return an Expr representing the addend
 Expr *parse_addend(std::istream &in);
-// When given an istream containing a multicand (number, expr in parens, variable or LetExpr), return an Expr representing the multicand
+// When given an istream containing a multicant (inner or multicand(expr)), return an Expr representing the addend
 Expr *parse_multicand(std::istream &in);
+// When given an istream containing an inner (number, expr in parens, variable or LetExpr), return an Expr representing the inner
+Expr *parse_inner(std::istream &in);
 // When given an istream containing a variable, return an Expr representing the variable
 Expr *parse_var(std::istream &in);
 // When given an istream containing a LetExpr, return an Expr representing the LetExpr
 Expr *parse_let(std::istream &in);
+// When given an istream containing a FunExpr, return an Expr representing the FunExpr
+Expr *parse_fun(std::istream &in);
 // When given an istream containing a IfExpr, return an Expr representing the IfExpr
 Expr *parse_if(std::istream &in);
 // When given an istream containing a BoolExpr, return an Expr representing the BoolExpr

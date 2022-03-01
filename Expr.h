@@ -25,8 +25,6 @@ public:
     virtual bool equals(Expr *e) = 0;
     // Returns an int for the value of an expression
     virtual Val * interp() = 0;
-    // Returns whether an expression has a variable or is a variable
-    virtual bool has_variable() = 0;
     // substitutes a variable in an expression with a given variable
     virtual Expr* subst(std::string to_replace, Expr* substitute_expr) = 0;
     // Prints this Expr's string representation to a given std::ostream&
@@ -51,8 +49,6 @@ public:
     bool equals(Expr *e) override;
     // Returns the value of this number
     Val * interp() override;
-    // Returns whether expression has a variable
-    bool has_variable() override;
     // substitutes a variable in an expression with a given variable
     Expr* subst(std::string to_replace, Expr* substitute_expr) override;
     // Print's this NumExpr's value to a given std::ostream&
@@ -73,8 +69,6 @@ public:
     bool equals(Expr *e) override;
     // Returns the value of this number
     Val * interp() override;
-    // Returns whether expression has a variable
-    bool has_variable() override;
     // substitutes a variable in an expression with a given variable
     Expr* subst(std::string to_replace, Expr* substitute_expr) override;
     // Print's this BoolExpr's value to a given std::ostream&
@@ -95,8 +89,6 @@ public:
     bool equals(Expr *e) override;
     // A variable has no value, so throws a runtime_error
     Val * interp() override;
-    // Returns whether expression has a variable
-    bool has_variable() override;
     // substitutes a variable in an expression with a given variable
     Expr* subst(std::string to_replace, Expr* substitute_expr) override;
     // Print's this VarExpr's name to a given std::ostream&
@@ -118,8 +110,6 @@ public:
     bool equals(Expr *e) override;
     // Returns the value of this addition Expr
     Val * interp() override;
-    // Returns whether expression has a variable
-    bool has_variable() override;
     // substitutes a variable in an expression with a given variable
     Expr* subst(std::string to_replace, Expr* substitute_expr) override;
     // Print's this EqExpr's string representation to a given std::ostream&
@@ -141,8 +131,6 @@ public:
     bool equals(Expr *e) override;
     // Returns the value of this addition Expr
     Val * interp() override;
-    // Returns whether expression has a variable
-    bool has_variable() override;
     // substitutes a variable in an expression with a given variable
     Expr* subst(std::string to_replace, Expr* substitute_expr) override;
     // Print's this AddExpr's string representation to a given std::ostream&
@@ -164,8 +152,6 @@ public:
     bool equals(Expr *e) override;
     // Returns the value of this expression
     Val * interp() override;
-    // Returns whether expression has a variable
-    bool has_variable() override;
     // substitutes a variable in an expression with a given variable
     Expr* subst(std::string to_replace, Expr* substitute_expr) override;
     // Print's this MultExpr's string representation to a given std::ostream&
@@ -188,8 +174,6 @@ public:
     bool equals(Expr *e) override;
     // Returns the value of this let Expr
     Val * interp() override;
-    // Returns whether expression has a variable
-    bool has_variable() override;
     // substitutes a variable in an expression with a given variable
     Expr* subst(std::string to_replace, Expr* substitute_expr) override;
     // Print's this LetExpr's string representation to a given std::ostream&
@@ -212,19 +196,55 @@ public:
     bool equals(Expr *e) override;
     // Returns the value of this let Expr
     Val * interp() override;
-    // Returns whether expression has a variable
-    bool has_variable() override;
     // substitutes a variable in an expression with a given variable
     Expr* subst(std::string to_replace, Expr* substitute_expr) override;
     // Print's this IfExpr's string representation to a given std::ostream&
     void print(std::ostream& output) override;
     // Prints this IfExpr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
     void pretty_print(std::ostream& output) override;
-    // Prints this IfExpr to output. Preceding expression, the integer place of the last newline is given and a boolean of whether _let needs parentheses is given. True means _let doesn't need parentheses
+    // Prints this IfExpr to output.
     void pretty_print_at(std::ostream &output, precedence_t prec, int lastNewLine, bool letParens) override;
 };
-
-
+// Expr subclass representing a function as an expression
+class FunExpr : public Expr {
+public:
+    VarExpr* formal_arg;
+    Expr* body;
+    // Constructor
+    FunExpr(VarExpr* formal_arg, Expr* body);
+    // Returns whether this is equal to a given Expr
+    bool equals(Expr *e) override;
+    // Returns the value of this let Expr
+    Val * interp() override;
+    // substitutes a variable in an expression with a given variable
+    Expr* subst(std::string to_replace, Expr* substitute_expr) override;
+    // Print's this FunExpr's string representation to a given std::ostream&
+    void print(std::ostream& output) override;
+    // Prints this FunExpr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
+    void pretty_print(std::ostream& output) override;
+    // Prints this FunExpr to output.
+    void pretty_print_at(std::ostream &output, precedence_t prec, int lastNewLine, bool letParens) override;
+};
+// Expr subclass representing a function being called as an expression
+class CallExpr : public Expr {
+public:
+    Expr* to_be_called;
+    Expr* actual_arg;
+    // Constructor
+    CallExpr(Expr* to_be_called, Expr* actual_arg);
+    // Returns whether this is equal to a given Expr
+    bool equals(Expr *e) override;
+    // Returns the value of this let Expr
+    Val * interp() override;
+    // substitutes a variable in an expression with a given variable
+    Expr* subst(std::string to_replace, Expr* substitute_expr) override;
+    // Print's this CallExpr's string representation to a given std::ostream&
+    void print(std::ostream& output) override;
+    // Prints this CallExpr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
+    void pretty_print(std::ostream& output) override;
+    // Prints this CallExpr to output. Preceding expression, the integer place of the last newline is given and a boolean of whether _fun needs parentheses is given. True means _fun doesn't need parentheses
+    void pretty_print_at(std::ostream &output, precedence_t prec, int lastNewLine, bool letParens) override;
+};
 
 // Helper function that prints the given expression's to_string to std::cout
 void printExpr(Expr* e);

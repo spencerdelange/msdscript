@@ -56,7 +56,7 @@ TEST_CASE("interp tests") {
     CHECK(m1->interp()->equals(new NumVal(6)));
     CHECK(m2->interp()->equals(new NumVal(30)));
     VarExpr* v1 = new VarExpr("a");
-    CHECK_THROWS_WITH(v1->interp(), "Error: a variable has no value.");
+    CHECK_THROWS_WITH(v1->interp(), "Error: a variable has no value: a");
     LetExpr* l1 = new LetExpr(new VarExpr("x"), new NumExpr(1), new NumExpr(2));
     CHECK(l1->interp()->equals(new NumVal(2)));
     LetExpr* l2 = new LetExpr(new VarExpr("x"), new NumExpr(2), new AddExpr(new VarExpr("x"), new NumExpr(5)));
@@ -73,24 +73,6 @@ TEST_CASE("interp tests") {
     LetExpr* l7 = new LetExpr(new VarExpr("y"), new NumExpr(6), new AddExpr(new VarExpr("x"), new NumExpr(1)));
     LetExpr* l8 = new LetExpr(new VarExpr("x"), new NumExpr(5), l7);
     CHECK(l8->interp()->equals(new NumVal(6)));
-}
-TEST_CASE("has_variable tests"){
-    AddExpr* a1 = new AddExpr(new NumExpr(3), new VarExpr("a"));
-    AddExpr* a2 = new AddExpr(new NumExpr(3), new NumExpr(2));
-    CHECK(a1->has_variable() == true);
-    CHECK(a2->has_variable() == false);
-    MultExpr* m1 = new MultExpr(new NumExpr(3), new VarExpr("a"));
-    CHECK(m1->has_variable() == true);
-    NumExpr* n1 = new NumExpr(3);
-    CHECK(n1->has_variable() == false);
-    VarExpr* v1 = new VarExpr("b");
-    CHECK(v1->has_variable() == true);
-    LetExpr* l3 = new LetExpr(new VarExpr("x"), new AddExpr(new VarExpr("x"), new NumExpr(2)), new NumExpr(3));
-    CHECK(l3->has_variable() == true);
-    LetExpr* l1 = new LetExpr(new VarExpr("x"), new NumExpr(1), new NumExpr(2));
-    CHECK(l1->has_variable() == false);
-    LetExpr* l4 = new LetExpr(new VarExpr("x"), new NumExpr(3), new AddExpr(new VarExpr("x"), new NumExpr(2)));
-    CHECK(l4->has_variable() == true);
 }
 TEST_CASE("subst tests"){
     VarExpr* v1 = new VarExpr("a");
@@ -259,6 +241,8 @@ TEST_CASE("parse"){
     CHECK(parse_str("2 * (2 + 3)")->interp()->equals(new NumVal(10)));
     CHECK(parse_str("(4)")->interp()->equals(new NumVal(4)));
 
+    parse_str("this")->pretty_to_string();
+
     CHECK(parse_str("this")->pretty_to_string() == "this");
     CHECK(parse_str("this    ")->pretty_to_string() == "this");
     CHECK(parse_str("     this")->pretty_to_string() == "this");
@@ -270,7 +254,7 @@ TEST_CASE("parse"){
     CHECK(parse_str("_let x = 4 _in x + -2")->pretty_to_string() ==
     "_let x = 4\n_in  x + -2");
     CHECK(parse_str("_let x = 4 _in x + -2")->to_string() == "(_let x=4 _in (x+-2))");
-    CHECK_THROWS_WITH(parse_str("_lt x = 4 _in x + -2")->interp(), "invalid input");
+    CHECK_THROWS_WITH(parse_str("_lt x = 4 _in x + -2")->interp(), "invalid input: _lt");
 }
 
 TEST_CASE("Val Tests"){
@@ -304,6 +288,48 @@ TEST_CASE("Refactor Tests"){
     CHECK_THROWS_WITH(run("_if 4 + 1\n"
               "_then 2\n"
               "_else 3"), "NumVal cannot be true or false");
-
-
 }
+TEST_CASE("Function tests"){
+    CHECK(parse_str("_fun (x) x + 1")->to_string() == "(_fun (x) (x+1))");
+    CHECK(parse_str("_fun (x) x + 1")->pretty_to_string() == "_fun (x)\n"
+                                                             "  x + 1");
+    CHECK(parse_str("f(10)")->pretty_to_string() == "f(10)");
+    CHECK(parse_str("f(10)")->to_string() == "f(10)");
+    CHECK(parse_str("_let f = _fun (x) x + 1\n"
+                    "_in f(10)")->to_string() == "(_let f=(_fun (x) (x+1)) _in f(10))");
+    CHECK(parse_str("_let f = _fun (x) x + 1\n"
+                    "_in f(10)")->pretty_to_string() == "_let f = _fun (x)\n"
+                                                        "           x + 1\n"
+                                                        "_in  f(10)");
+    CHECK(parse_str("_fun (x) x + 1")->interp()->equals(new FunVal("x", new AddExpr(new VarExpr("x"), new NumExpr(1)))));
+    CHECK_THROWS_WITH(parse_str("f(10)")->interp(), "Error: a variable has no value: f");
+    CHECK(parse_str("f(10)")->equals(new CallExpr(new VarExpr("f"), new NumExpr(10))));
+
+    CHECK(parse_str("_let f = _fun (x) x + 1\n"
+                    "_in f(10)")->interp()->equals(new NumVal(11)));
+    CHECK(parse_str("_let factrl = _fun (factrl)\n"
+                       "                _fun (x)\n"
+                       "                  _if x == 1\n"
+                       "                  _then 1\n"
+                       "                  _else x * factrl(factrl)(x + -1)\n"
+                       "_in  factrl(factrl)(10)"
+                       )->pretty_to_string() ==
+                       "_let factrl = _fun (factrl)\n"
+                       "                _fun (x)\n"
+                       "                  _if x == 1\n"
+                       "                  _then 1\n"
+                       "                  _else x * factrl(factrl)(x + -1)\n"
+                       "_in  factrl(factrl)(10)");
+    CHECK(parse_str("_let f = _fun (g) \n"
+                    "              g(5) \n"
+                    "   _in _let g = _fun (y) \n"
+                    "                  y + 2 \n"
+                    "       _in f(g)")
+                    ->interp()->equals(new NumVal(7)));
+}
+
+
+
+
+
+

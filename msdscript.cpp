@@ -113,6 +113,18 @@ Expr *parse_addend(std::istream &in){
         return e;
 }
 Expr *parse_multicand(std::istream &in) {
+    Expr* e;
+    e = parse_inner(in);
+    while (in.peek() == '(') {
+        consume(in, '(');
+        Expr *actual_arg = parse_expr(in);
+        consume(in, ')');
+        CallExpr *temp = new CallExpr(e, actual_arg);
+        e = temp;
+    }
+    return e;
+}
+Expr *parse_inner(std::istream &in) {
     skip_whitespace(in);
     int c = in.peek();
     // if c is a number parse it
@@ -138,15 +150,17 @@ Expr *parse_multicand(std::istream &in) {
             return parse_let(in);
         else if(keyword == "_if")
             return parse_if(in);
+        else if(keyword == "_fun")
+            return parse_fun(in);
         else if(keyword == "_false")
             return new BoolExpr(false);
         else if(keyword == "_true")
             return new BoolExpr(true);
         else
-            throw std::runtime_error("invalid input");
+            throw std::runtime_error("invalid input: " + keyword);
     } else {
         consume(in, c);
-        throw std::runtime_error("invalid input");
+        throw std::runtime_error("invalid input: ");
     }
 }
 Expr *parse_num(std::istream &in) {
@@ -194,7 +208,6 @@ Expr *parse_let(std::istream &in){
     if(!parse_keyword(in, "="))
         throw std::runtime_error("invalid input for '_let'");
 
-
     Expr* rhs = parse_expr(in);
 
     skip_whitespace(in);
@@ -203,9 +216,22 @@ Expr *parse_let(std::istream &in){
     Expr* body = parse_expr(in);
     return new LetExpr(lhs, rhs, body);
 }
+Expr *parse_fun(std::istream &in){
+    Expr* e = parse_expr(in);
+    VarExpr* actual_arg = dynamic_cast<VarExpr*>(e);
+    if(actual_arg == nullptr)
+        throw std::runtime_error("invalid input for '_fun'");
+    Expr* body = parse_expr(in);
+    return new FunExpr(actual_arg, body);
+}
 Expr *parse_var(std::istream &in){
     string varName;
-    in >> varName;
+    char c;
+    while (in.get(c)){
+        varName += c;
+        if(in.peek() == ' ' || in.peek() == ')' || in.peek() == '(')
+            break;
+    }
     return new VarExpr(varName);
 }
 Expr *parse_bool(std::istream &in){
