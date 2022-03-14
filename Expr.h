@@ -7,6 +7,7 @@
 
 #include <string>
 #include <iostream>
+#include "pointer.h"
 
 // Enum that represents precedence of a given Expr
 typedef enum precedence_t {
@@ -19,14 +20,14 @@ typedef enum precedence_t {
 class Val;
 
 // Class representing an expression
-class Expr {
+CLASS(Expr) {
 public:
     // Returns boolean whether this is equal to a given Expr object.
-    virtual bool equals(Expr *e) = 0;
+    virtual bool equals(PTR(Expr) e) = 0;
     // Returns an int for the value of an expression
-    virtual Val * interp() = 0;
+    virtual PTR(Val) interp() = 0;
     // substitutes a variable in an expression with a given variable
-    virtual Expr* subst(std::string to_replace, Expr* substitute_expr) = 0;
+    virtual PTR(Expr) subst(std::string to_replace, PTR(Expr) substitute_expr) = 0;
     // Prints this Expr's string representation to a given std::ostream&
     virtual void print(std::ostream& output) = 0;
     // Prints this Expr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
@@ -37,6 +38,8 @@ public:
     std::string to_string();
     // Returns a string containing the results of print
     std::string pretty_to_string();
+    // Satisfies 'virtual destructors' warning
+    virtual ~Expr();
 };
 
 // Expr subclass representing a number in an expression
@@ -46,11 +49,11 @@ public:
     // Constructs a NumExpr object with a value of given rep
     explicit NumExpr(int rep);
     // Returns whether this is equal to a given Expr object
-    bool equals(Expr *e) override;
+    bool equals(PTR(Expr) e) override;
     // Returns the value of this number
-    Val * interp() override;
+    PTR(Val) interp() override;
     // substitutes a variable in an expression with a given variable
-    Expr* subst(std::string to_replace, Expr* substitute_expr) override;
+    PTR(Expr) subst(std::string to_replace, PTR(Expr) substitute_expr) override;
     // Print's this NumExpr's value to a given std::ostream&
     void print(std::ostream& output) override;
     // Prints this NumExpr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
@@ -66,11 +69,11 @@ public:
     // Constructs a BoolExpr object with a value of given rep
     explicit BoolExpr(bool rep);
     // Returns whether this is equal to a given Expr object
-    bool equals(Expr *e) override;
+    bool equals(PTR(Expr) e) override;
     // Returns the value of this number
-    Val * interp() override;
+    PTR(Val) interp() override;
     // substitutes a variable in an expression with a given variable
-    Expr* subst(std::string to_replace, Expr* substitute_expr) override;
+    PTR(Expr) subst(std::string to_replace, PTR(Expr) substitute_expr) override;
     // Print's this BoolExpr's value to a given std::ostream&
     void print(std::ostream& output) override;
     // Prints this BoolExpr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
@@ -86,11 +89,11 @@ public:
     // Constructor
     explicit VarExpr(std::string name);
     // Returns whether this is equals to a given expression
-    bool equals(Expr *e) override;
+    bool equals(PTR(Expr) e) override;
     // A variable has no value, so throws a runtime_error
-    Val * interp() override;
+    PTR(Val) interp() override;
     // substitutes a variable in an expression with a given variable
-    Expr* subst(std::string to_replace, Expr* substitute_expr) override;
+    PTR(Expr) subst(std::string to_replace, PTR(Expr) substitute_expr) override;
     // Print's this VarExpr's name to a given std::ostream&
     void print(std::ostream& output) override;
     // Prints this VarExpr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
@@ -102,16 +105,16 @@ public:
 // Expr subclass representing an equals '==' expression
 class EqExpr : public Expr {
 public:
-    Expr *lhs;
-    Expr *rhs;
+    PTR(Expr) lhs;
+    PTR(Expr) rhs;
     // Constructor
-    EqExpr(Expr *lhs, Expr *rhs);
+    EqExpr(PTR(Expr) lhs, PTR(Expr) rhs);
     // Returns whether this is equal to a given Expr
-    bool equals(Expr *e) override;
+    bool equals(PTR(Expr) e) override;
     // Returns the value of this addition Expr
-    Val * interp() override;
+    PTR(Val) interp() override;
     // substitutes a variable in an expression with a given variable
-    Expr* subst(std::string to_replace, Expr* substitute_expr) override;
+    PTR(Expr) subst(std::string to_replace, PTR(Expr) substitute_expr) override;
     // Print's this EqExpr's string representation to a given std::ostream&
     void print(std::ostream& output) override;
     // Prints this EqExpr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
@@ -123,16 +126,16 @@ public:
 // Expr subclass representing the addition of two expressions
 class AddExpr : public Expr {
 public:
-    Expr *lhs;
-    Expr *rhs;
+    PTR(Expr) lhs;
+    PTR(Expr) rhs;
     // Constructor
-    AddExpr(Expr *lhs, Expr *rhs);
+    AddExpr(PTR(Expr) lhs, PTR(Expr) rhs);
     // Returns whether this is equal to a given Expr
-    bool equals(Expr *e) override;
+    bool equals(PTR(Expr) e) override;
     // Returns the value of this addition Expr
-    Val * interp() override;
+    PTR(Val) interp() override;
     // substitutes a variable in an expression with a given variable
-    Expr* subst(std::string to_replace, Expr* substitute_expr) override;
+    PTR(Expr) subst(std::string to_replace, PTR(Expr) substitute_expr) override;
     // Print's this AddExpr's string representation to a given std::ostream&
     void print(std::ostream& output) override;
     // Prints this AddExpr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
@@ -144,16 +147,16 @@ public:
 // Expr subclass representing the multiplication of two expressions
 class MultExpr : public Expr {
 public:
-    Expr *lhs;
-    Expr *rhs;
+    PTR(Expr) lhs;
+    PTR(Expr) rhs;
     // Constructor
-    MultExpr(Expr *lhs, Expr *rhs);
+    MultExpr(PTR(Expr) lhs, PTR(Expr) rhs);
     // Returns whether this is equal to a given Expr object
-    bool equals(Expr *e) override;
+    bool equals(PTR(Expr) e) override;
     // Returns the value of this expression
-    Val * interp() override;
+    PTR(Val) interp() override;
     // substitutes a variable in an expression with a given variable
-    Expr* subst(std::string to_replace, Expr* substitute_expr) override;
+    PTR(Expr) subst(std::string to_replace, PTR(Expr) substitute_expr) override;
     // Print's this MultExpr's string representation to a given std::ostream&
     void print(std::ostream& output) override;
     // Prints this MultExpr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
@@ -165,17 +168,17 @@ public:
 // Expr subclass representing a variable assigned a value in a given expression
 class LetExpr : public Expr {
 public:
-    VarExpr *lhs;
-    Expr *rhs;
-    Expr *body;
+    PTR(VarExpr) lhs;
+    PTR(Expr) rhs;
+    PTR(Expr) body;
     // Constructor
-    LetExpr(VarExpr* lhs, Expr *rhs, Expr *body);
+    LetExpr(PTR(VarExpr) lhs, PTR(Expr) rhs, PTR(Expr) body);
     // Returns whether this is equal to a given Expr
-    bool equals(Expr *e) override;
+    bool equals(PTR(Expr) e) override;
     // Returns the value of this let Expr
-    Val * interp() override;
+    PTR(Val) interp() override;
     // substitutes a variable in an expression with a given variable
-    Expr* subst(std::string to_replace, Expr* substitute_expr) override;
+    PTR(Expr) subst(std::string to_replace, PTR(Expr) substitute_expr) override;
     // Print's this LetExpr's string representation to a given std::ostream&
     void print(std::ostream& output) override;
     // Prints this LetExpr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
@@ -187,17 +190,17 @@ public:
 // Expr subclass representing an 'if, then, else' expression
 class IfExpr : public Expr {
 public:
-    Expr *_if;
-    Expr *_then;
-    Expr *_else;
+    PTR(Expr) _if;
+    PTR(Expr) _then;
+    PTR(Expr) _else;
     // Constructor
-    IfExpr(Expr* _if, Expr* _then, Expr* _else);
+    IfExpr(PTR(Expr) _if, PTR(Expr) _then, PTR(Expr) _else);
     // Returns whether this is equal to a given Expr
-    bool equals(Expr *e) override;
+    bool equals(PTR(Expr) e) override;
     // Returns the value of this let Expr
-    Val * interp() override;
+    PTR(Val) interp() override;
     // substitutes a variable in an expression with a given variable
-    Expr* subst(std::string to_replace, Expr* substitute_expr) override;
+    PTR(Expr) subst(std::string to_replace, PTR(Expr) substitute_expr) override;
     // Print's this IfExpr's string representation to a given std::ostream&
     void print(std::ostream& output) override;
     // Prints this IfExpr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
@@ -208,16 +211,16 @@ public:
 // Expr subclass representing a function as an expression
 class FunExpr : public Expr {
 public:
-    VarExpr* formal_arg;
-    Expr* body;
+    PTR(VarExpr) formal_arg;
+    PTR(Expr) body;
     // Constructor
-    FunExpr(VarExpr* formal_arg, Expr* body);
+    FunExpr(PTR(VarExpr) formal_arg, PTR(Expr) body);
     // Returns whether this is equal to a given Expr
-    bool equals(Expr *e) override;
+    bool equals(PTR(Expr) e) override;
     // Returns the value of this let Expr
-    Val * interp() override;
+    PTR(Val) interp() override;
     // substitutes a variable in an expression with a given variable
-    Expr* subst(std::string to_replace, Expr* substitute_expr) override;
+    PTR(Expr) subst(std::string to_replace, PTR(Expr) substitute_expr) override;
     // Print's this FunExpr's string representation to a given std::ostream&
     void print(std::ostream& output) override;
     // Prints this FunExpr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
@@ -228,16 +231,16 @@ public:
 // Expr subclass representing a function being called as an expression
 class CallExpr : public Expr {
 public:
-    Expr* to_be_called;
-    Expr* actual_arg;
+    PTR(Expr) to_be_called;
+    PTR(Expr) actual_arg;
     // Constructor
-    CallExpr(Expr* to_be_called, Expr* actual_arg);
+    CallExpr(PTR(Expr) to_be_called, PTR(Expr) actual_arg);
     // Returns whether this is equal to a given Expr
-    bool equals(Expr *e) override;
+    bool equals(PTR(Expr) e) override;
     // Returns the value of this let Expr
-    Val * interp() override;
+    PTR(Val) interp() override;
     // substitutes a variable in an expression with a given variable
-    Expr* subst(std::string to_replace, Expr* substitute_expr) override;
+    PTR(Expr) subst(std::string to_replace, PTR(Expr) substitute_expr) override;
     // Print's this CallExpr's string representation to a given std::ostream&
     void print(std::ostream& output) override;
     // Prints this CallExpr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
@@ -247,8 +250,8 @@ public:
 };
 
 // Helper function that prints the given expression's to_string to std::cout
-void printExpr(Expr* e);
+void printExpr(PTR(Expr) e);
 // Helper function that prints the given expression's pretty_to_string to std::cout
-void printPrettyExpr(Expr* e);
+void printPrettyExpr(PTR(Expr) e);
 
 #endif //MSDSCRIPT_EXPR_H

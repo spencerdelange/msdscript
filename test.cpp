@@ -18,228 +18,221 @@ int test(char* argv[]){
     return Catch::Session().run(1, argv);
 }
 TEST_CASE("equalstests") {
-    NumExpr* n1 = new NumExpr(1);
-    NumExpr* n2 = new NumExpr(2);
-    NumExpr* n3 = new NumExpr(3);
-    NumExpr* n4 = new NumExpr(4);
-    AddExpr* a1 = new AddExpr(n1, n2);
-    AddExpr* a2 = new AddExpr(n3, n4);
-    MultExpr* m = new MultExpr(n1, n2);
+    PTR(NumExpr) n1 = NEW(NumExpr)(1);
+    PTR(NumExpr) n2 = NEW(NumExpr)(2);
+    PTR(NumExpr) n3 = NEW(NumExpr)(3);
+    PTR(NumExpr) n4 = NEW(NumExpr)(4);
+    PTR(AddExpr) a1 = NEW(AddExpr)(n1, n2);
+    PTR(AddExpr) a2 = NEW(AddExpr)(n3, n4);
+    PTR(MultExpr) m = NEW(MultExpr)(n1, n2);
     CHECK(n1->equals(n2) == false);
     CHECK(a1->equals(a2) == false);
     CHECK(a1->equals(a1) == true);
     CHECK(a1->equals(m) == false);
     CHECK(n1->equals(a1) == false);
-    MultExpr* m1 = nullptr;
+    PTR(MultExpr) m1 = nullptr;
     CHECK(m->equals(m1) == false);
-    VarExpr* v1 = nullptr;
-    VarExpr* v2 = new VarExpr("x");
+    PTR(VarExpr) v1 = nullptr;
+    PTR(VarExpr) v2 = NEW(VarExpr)("x");
     CHECK(v2->equals(v1) == false);
-    LetExpr* l1 = new LetExpr(new VarExpr("x"), new NumExpr(1), new NumExpr(2));
-    LetExpr* l2 = new LetExpr(new VarExpr("x"), new NumExpr(1), new NumExpr(2));
+    PTR(LetExpr) l1 = NEW(LetExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(1), NEW(NumExpr)(2));
+    PTR(LetExpr) l2 = NEW(LetExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(1), NEW(NumExpr)(2));
     CHECK(v2->equals(l1) == false);
     CHECK(l1->equals(l2) == true);
-    LetExpr* l3 = new LetExpr(new VarExpr("y"), new NumExpr(1), new NumExpr(2));
+    PTR(LetExpr) l3 = NEW(LetExpr)(NEW(VarExpr)("y"), NEW(NumExpr)(1), NEW(NumExpr)(2));
     CHECK(l1->equals(l3) == false);
-    LetExpr* l4 = nullptr;
+    PTR(LetExpr) l4 = nullptr;
     CHECK(l3->equals(l4) == false);
 }
 TEST_CASE("interp tests") {
-    NumExpr* n2 = new NumExpr(2);
-    NumExpr* n3 = new NumExpr(3);
-    AddExpr* a1 = new AddExpr(n2, n3);
-    AddExpr* a2 = new AddExpr(n2, n3);
-    MultExpr* m1 = new MultExpr(n2, n3);
-    MultExpr* m2 = new MultExpr(a2, m1);
-    CHECK(n2->interp()->equals(new NumVal(2)));
-    CHECK(a1->interp()->equals(new NumVal(5)));
-    CHECK(m1->interp()->equals(new NumVal(6)));
-    CHECK(m2->interp()->equals(new NumVal(30)));
-    VarExpr* v1 = new VarExpr("a");
+    PTR(NumExpr) n2 = NEW(NumExpr)(2);
+    PTR(NumExpr) n3 = NEW(NumExpr)(3);
+    PTR(AddExpr) a1 = NEW(AddExpr)(n2, n3);
+    PTR(AddExpr) a2 = NEW(AddExpr)(n2, n3);
+    PTR(MultExpr) m1 = NEW(MultExpr)(n2, n3);
+    PTR(MultExpr) m2 = NEW(MultExpr)(a2, m1);
+    CHECK(n2->interp()->equals(NEW(NumVal)(2)));
+    CHECK(a1->interp()->equals(NEW(NumVal)(5)));
+    CHECK(m1->interp()->equals(NEW(NumVal)(6)));
+    CHECK(m2->interp()->equals(NEW(NumVal)(30)));
+    PTR(VarExpr) v1 = NEW(VarExpr)("a");
     CHECK_THROWS_WITH(v1->interp(), "Error: a variable has no value: a");
-    LetExpr* l1 = new LetExpr(new VarExpr("x"), new NumExpr(1), new NumExpr(2));
-    CHECK(l1->interp()->equals(new NumVal(2)));
-    LetExpr* l2 = new LetExpr(new VarExpr("x"), new NumExpr(2), new AddExpr(new VarExpr("x"), new NumExpr(5)));
-    CHECK(l2->interp()->equals(new NumVal(7)));
+    PTR(LetExpr) l1 = NEW(LetExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(1), NEW(NumExpr)(2));
+    CHECK(l1->interp()->equals(NEW(NumVal)(2)));
+    PTR(LetExpr) l2 = NEW(LetExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(2), NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5)));
+    CHECK(l2->interp()->equals(NEW(NumVal)(7)));
 
-    LetExpr* l3 = new LetExpr(new VarExpr("x"), new AddExpr(new VarExpr("x"), new NumExpr(2)), new AddExpr(new VarExpr("x"), new NumExpr(1)));
-    LetExpr* l4 = new LetExpr(new VarExpr("x"), new NumExpr(5), l3);
-    CHECK(l4->interp()->equals(new NumVal(8)));
+    PTR(LetExpr) l3 = NEW(LetExpr)(NEW(VarExpr)("x"), NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(2)), NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(1)));
+    PTR(LetExpr) l4 = NEW(LetExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5), l3);
+    CHECK(l4->interp()->equals(NEW(NumVal)(8)));
 
-    LetExpr* l5 = new LetExpr(new VarExpr("x"), new NumExpr(6), new AddExpr(new VarExpr("x"), new NumExpr(1)));
-    LetExpr* l6 = new LetExpr(new VarExpr("x"), new NumExpr(5), l5);
-    CHECK(l6->interp()->equals(new NumVal(7)));
+    PTR(LetExpr) l5 = NEW(LetExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(6), NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(1)));
+    PTR(LetExpr) l6 = NEW(LetExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5), l5);
+    CHECK(l6->interp()->equals(NEW(NumVal)(7)));
 
-    LetExpr* l7 = new LetExpr(new VarExpr("y"), new NumExpr(6), new AddExpr(new VarExpr("x"), new NumExpr(1)));
-    LetExpr* l8 = new LetExpr(new VarExpr("x"), new NumExpr(5), l7);
-    CHECK(l8->interp()->equals(new NumVal(6)));
+    PTR(LetExpr) l7 = NEW(LetExpr)(NEW(VarExpr)("y"), NEW(NumExpr)(6), NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(1)));
+    PTR(LetExpr) l8 = NEW(LetExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5), l7);
+    CHECK(l8->interp()->equals(NEW(NumVal)(6)));
 }
 TEST_CASE("subst tests"){
-    VarExpr* v1 = new VarExpr("a");
-    VarExpr* v2 = new VarExpr("a");
-    VarExpr* v3 = new VarExpr("b");
+    PTR(VarExpr) v1 = NEW(VarExpr)("a");
+    PTR(VarExpr) v2 = NEW(VarExpr)("a");
+    PTR(VarExpr) v3 = NEW(VarExpr)("b");
     CHECK(v1->equals(v2));
-    v2 = (VarExpr*)(v2->subst("a", v3));
-    CHECK(v2->equals(v3));
 
-    NumExpr* n1 = new NumExpr(3);
-    VarExpr* v4 = new VarExpr("z");
-    AddExpr* a1 = new AddExpr(v4, n1);
-    CHECK(a1->equals(new AddExpr(new VarExpr("z"), new NumExpr(3))));
+    PTR(NumExpr) n1 = NEW(NumExpr)(3);
+    PTR(VarExpr) v4 = NEW(VarExpr)("z");
+    PTR(AddExpr) a1 = NEW(AddExpr)(v4, n1);
+    CHECK(a1->equals(NEW(AddExpr)(NEW(VarExpr)("z"), NEW(NumExpr)(3))));
 
-    VarExpr* v5 = new VarExpr("x");
-    NumExpr* n7 = new NumExpr(7);
-    AddExpr* a2 = new AddExpr(v5, n7);
-    VarExpr* v6 = new VarExpr("y");
-    AddExpr* a3 = new AddExpr(v6, n7);
-    CHECK(a2->equals(new AddExpr(v5, n7)));
-    CHECK(a3->equals(new AddExpr(v6, n7)));
+    PTR(VarExpr) v5 = NEW(VarExpr)("x");
+    PTR(NumExpr) n7 = NEW(NumExpr)(7);
+    PTR(AddExpr) a2 = NEW(AddExpr)(v5, n7);
+    PTR(VarExpr) v6 = NEW(VarExpr)("y");
+    PTR(AddExpr) a3 = NEW(AddExpr)(v6, n7);
+    CHECK(a2->equals(NEW(AddExpr)(v5, n7)));
+    CHECK(a3->equals(NEW(AddExpr)(v6, n7)));
 
-    a2 = (AddExpr*)a2->subst("x", new VarExpr("y"));
-    CHECK(a2->equals(a3));
 
-    VarExpr* v7 = new VarExpr("x");
-    v6 = (VarExpr*)v7->subst("j", new VarExpr("j"));
-    CHECK(v7->pretty_to_string() == "x");
 
-    CHECK( (new AddExpr(new VarExpr("x"), new NumExpr(7)))
-                   ->subst("x", new VarExpr("y"))
-                   ->equals(new AddExpr(new VarExpr("y"), new NumExpr(7))) );
-    CHECK( (new MultExpr(new VarExpr("x"), new NumExpr(7)))
-                   ->subst("x", new VarExpr("y"))
-                   ->equals(new MultExpr(new VarExpr("y"), new NumExpr(7))) );
+    CHECK( (NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(7)))
+                   ->subst("x", NEW(VarExpr)("y"))
+                   ->equals(NEW(AddExpr)(NEW(VarExpr)("y"), NEW(NumExpr)(7))) );
+    CHECK( (NEW(MultExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(7)))
+                   ->subst("x", NEW(VarExpr)("y"))
+                   ->equals(NEW(MultExpr)(NEW(VarExpr)("y"), NEW(NumExpr)(7))) );
 }
 TEST_CASE("print"){
-    NumExpr* n1 = new NumExpr(3);
+    PTR(NumExpr) n1 = NEW(NumExpr)(3);
     std::stringstream out1("");
     n1->print(out1);
     CHECK(out1.str() == "3");
 
-    VarExpr* v1 = new VarExpr("var1");
+    PTR(VarExpr) v1 = NEW(VarExpr)("var1");
     std::stringstream out2("");
     v1->print(out2);
     CHECK(out2.str() == "var1");
 
-    AddExpr* a1 = new AddExpr(n1, v1);
+    PTR(AddExpr) a1 = NEW(AddExpr)(n1, v1);
     std::stringstream out3("");
     a1->print(out3);
     CHECK(out3.str() == "(3+var1)");
 
-    MultExpr* m1 = new MultExpr(n1, v1);
+    PTR(MultExpr) m1 = NEW(MultExpr)(n1, v1);
     std::stringstream out4("");
     m1->print(out4);
     CHECK(out4.str() == "(3*var1)");
 
-    MultExpr* m2 = new MultExpr(m1, n1);
+    PTR(MultExpr) m2 = NEW(MultExpr)(m1, n1);
     std::stringstream out5("");
     m2->print(out5);
     CHECK(out5.str() == "((3*var1)*3)");
 
-    AddExpr* a2 = new AddExpr(n1, a1);
+    PTR(AddExpr) a2 = NEW(AddExpr)(n1, a1);
     std::stringstream out6("");
     a2->print(out6);
     CHECK(out6.str() == "(3+(3+var1))");
 
     CHECK(a2->to_string() == "(3+(3+var1))");
 
-    LetExpr* l1 = new LetExpr(new VarExpr("x"), new NumExpr(1), new NumExpr(2));
+    PTR(LetExpr) l1 = NEW(LetExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(1), NEW(NumExpr)(2));
     CHECK(l1->to_string() == "(_let x=1 _in 2)");
 
-    LetExpr* l2 = new LetExpr(new VarExpr("y"), new NumExpr(3), new AddExpr(new VarExpr("y"), new NumExpr(2)));
+    PTR(LetExpr) l2 = NEW(LetExpr)(NEW(VarExpr)("y"), NEW(NumExpr)(3), NEW(AddExpr)(NEW(VarExpr)("y"), NEW(NumExpr)(2)));
     CHECK(l2->to_string() == "(_let y=3 _in (y+2))");
 
-    LetExpr* l3 = new LetExpr(new VarExpr("x"), new NumExpr(5), new AddExpr(l2, new VarExpr("x")));
+    PTR(LetExpr) l3 = NEW(LetExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5), NEW(AddExpr)(l2, NEW(VarExpr)("x")));
     CHECK(l3->to_string() == "(_let x=5 _in ((_let y=3 _in (y+2))+x))");
 
 }
 TEST_CASE("pretty_print"){
-    NumExpr* n3 = new NumExpr(3);
+    PTR(NumExpr) n3 = NEW(NumExpr)(3);
     CHECK(n3->pretty_to_string() == "3");
 
-    VarExpr* v1 = new VarExpr("v1");
+    PTR(VarExpr) v1 = NEW(VarExpr)("v1");
     CHECK(v1->pretty_to_string() == "v1");
 
-    AddExpr* a1 = new AddExpr(n3, v1);
+    PTR(AddExpr) a1 = NEW(AddExpr)(n3, v1);
     CHECK(a1->pretty_to_string() == "3 + v1");
 
-    AddExpr* a2 = new AddExpr(a1, n3);
+    PTR(AddExpr) a2 = NEW(AddExpr)(a1, n3);
     CHECK(a2->pretty_to_string() == "(3 + v1) + 3");
 
-    MultExpr* m1 = new MultExpr(n3, v1);
+    PTR(MultExpr) m1 = NEW(MultExpr)(n3, v1);
     CHECK(m1->pretty_to_string() == "3 * v1");
 
-    NumExpr* n1 = new NumExpr(1);
-    NumExpr* n2 = new NumExpr(2);
-    MultExpr* m2 = new MultExpr(n2, n3);
-    AddExpr* a4 = new AddExpr(n1, m2);
+    PTR(NumExpr) n1 = NEW(NumExpr)(1);
+    PTR(NumExpr) n2 = NEW(NumExpr)(2);
+    PTR(MultExpr) m2 = NEW(MultExpr)(n2, n3);
+    PTR(AddExpr) a4 = NEW(AddExpr)(n1, m2);
     CHECK(a4->pretty_to_string() == "1 + 2 * 3");
 
-    MultExpr* m3 = new MultExpr(n1, new AddExpr(n2, n3));
+    PTR(MultExpr) m3 = NEW(MultExpr)(n1, NEW(AddExpr)(n2, n3));
     CHECK(m3->pretty_to_string() == "1 * (2 + 3)");
 
-    MultExpr* m4 = new MultExpr(new MultExpr(new NumExpr(2), new NumExpr(3)), new NumExpr(4));
+    PTR(MultExpr) m4 = NEW(MultExpr)(NEW(MultExpr)(NEW(NumExpr)(2), NEW(NumExpr)(3)), NEW(NumExpr)(4));
     CHECK(m4->pretty_to_string() == "(2 * 3) * 4");
 
-    MultExpr* m5 = new MultExpr(new NumExpr(2), new MultExpr(new NumExpr(3), new NumExpr(4)));
+    PTR(MultExpr) m5 = NEW(MultExpr)(NEW(NumExpr)(2), NEW(MultExpr)(NEW(NumExpr)(3), NEW(NumExpr)(4)));
     CHECK(m5->pretty_to_string() == "2 * 3 * 4");
 
-    MultExpr* m6 = new MultExpr(new MultExpr(new NumExpr(3), new NumExpr(2)), new AddExpr(new NumExpr(2), new NumExpr(1)));
+    PTR(MultExpr) m6 = NEW(MultExpr)(NEW(MultExpr)(NEW(NumExpr)(3), NEW(NumExpr)(2)), NEW(AddExpr)(NEW(NumExpr)(2), NEW(NumExpr)(1)));
     CHECK(m6->pretty_to_string() == "(3 * 2) * (2 + 1)");
 
-    AddExpr* a5 = new AddExpr(new MultExpr(new NumExpr(1), new NumExpr(2)),
-                              new AddExpr(new NumExpr(4), new NumExpr(7)));
+    PTR(AddExpr) a5 = NEW(AddExpr)(NEW(MultExpr)(NEW(NumExpr)(1), NEW(NumExpr)(2)),
+                              NEW(AddExpr)(NEW(NumExpr)(4), NEW(NumExpr)(7)));
     CHECK(a5->pretty_to_string() == "1 * 2 + 4 + 7");
 
-    AddExpr* a7 = new AddExpr(new AddExpr(n1, n2), new NumExpr(3));
+    PTR(AddExpr) a7 = NEW(AddExpr)(NEW(AddExpr)(n1, n2), NEW(NumExpr)(3));
     CHECK(a7->pretty_to_string() == "(1 + 2) + 3");
 
-    n3 = new NumExpr(3);
-    AddExpr* a8 = new AddExpr(n1, new AddExpr(n2, n3));
+    n3 = NEW(NumExpr)(3);
+    PTR(AddExpr) a8 = NEW(AddExpr)(n1, NEW(AddExpr)(n2, n3));
     CHECK(a8->pretty_to_string() == "1 + 2 + 3");
 
-    AddExpr* a9 = new AddExpr(a7, new NumExpr(4));
+    PTR(AddExpr) a9 = NEW(AddExpr)(a7, NEW(NumExpr)(4));
     CHECK(a9->pretty_to_string() == "((1 + 2) + 3) + 4");
 
-    LetExpr* l1 = new LetExpr(new VarExpr("y"), new NumExpr(3), new AddExpr(new VarExpr("y"), new NumExpr(2)));
+    PTR(LetExpr) l1 = NEW(LetExpr)(NEW(VarExpr)("y"), NEW(NumExpr)(3), NEW(AddExpr)(NEW(VarExpr)("y"), NEW(NumExpr)(2)));
     CHECK(l1->pretty_to_string() == "_let y = 3\n"
                                     "_in  y + 2");
 
-    AddExpr* a6 = new AddExpr(new NumExpr(7), l1);
+    PTR(AddExpr) a6 = NEW(AddExpr)(NEW(NumExpr)(7), l1);
     CHECK(a6->pretty_to_string() == "7 + _let y = 3\n"
                                     "    _in  y + 2");
 
-    LetExpr* l2 = new LetExpr(new VarExpr("x"), new NumExpr(5), new AddExpr(new LetExpr(new VarExpr("y"), new NumExpr(3), new AddExpr(new VarExpr("y"), new NumExpr(2))), new VarExpr("x")));
+    PTR(LetExpr) l2 = NEW(LetExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5), NEW(AddExpr)(NEW(LetExpr)(NEW(VarExpr)("y"), NEW(NumExpr)(3), NEW(AddExpr)(NEW(VarExpr)("y"), NEW(NumExpr)(2))), NEW(VarExpr)("x")));
     CHECK(l2->pretty_to_string() == "_let x = 5\n"
                                     "_in  (_let y = 3\n"
                                     "      _in  y + 2) + x");
 
-    MultExpr* m7 = new MultExpr(new NumExpr(5), new LetExpr(new VarExpr("x"), new NumExpr(5), new VarExpr("x")));
-    AddExpr* a10 = new AddExpr(m7, new NumExpr(1));
+    PTR(MultExpr) m7 = NEW(MultExpr)(NEW(NumExpr)(5), NEW(LetExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5), NEW(VarExpr)("x")));
+    PTR(AddExpr) a10 = NEW(AddExpr)(m7, NEW(NumExpr)(1));
     CHECK(a10->pretty_to_string() == "5 * (_let x = 5\n"
                                      "     _in  x) + 1");
-    CHECK(a10->interp()->equals(new NumVal(26)));
+    CHECK(a10->interp()->equals(NEW(NumVal)(26)));
 
-    AddExpr* a11 = new AddExpr(new LetExpr(new VarExpr("x"), new NumExpr(5), new VarExpr("x")), new NumExpr(1));
+    PTR(AddExpr) a11 = NEW(AddExpr)(NEW(LetExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5), NEW(VarExpr)("x")), NEW(NumExpr)(1));
     CHECK(a11->pretty_to_string() == "(_let x = 5\n"
                                      " _in  x) + 1");
 
-    MultExpr* m8 = new MultExpr(new NumExpr(5), new LetExpr(new VarExpr("x"), new NumExpr(5), new AddExpr(new VarExpr("x"), new NumExpr(1))));
+    PTR(MultExpr) m8 = NEW(MultExpr)(NEW(NumExpr)(5), NEW(LetExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5), NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(1))));
     CHECK(m8->pretty_to_string() == "5 * _let x = 5\n"
                                     "    _in  x + 1");
-    CHECK(m8->interp()->equals(new NumVal(30)));
+    CHECK(m8->interp()->equals(NEW(NumVal)(30)));
 }
 
 TEST_CASE("parse"){
-    CHECK(parse_str("5")->interp()->equals(new NumVal(5)));
-    CHECK(parse_str("-5")->interp()->equals(new NumVal(-5)));
-    CHECK(parse_str("5 + 2")->interp()->equals(new NumVal(7)));
-    CHECK(parse_str("5 + -10")->interp()->equals(new NumVal((-5))));
-    CHECK(parse_str("    5 + 2")->interp()->equals(new NumVal(7)));
-    CHECK(parse_str("4 * 2")->interp()->equals(new NumVal(8)));
-    CHECK(parse_str("(4 * 2)")->interp()->equals(new NumVal(8)));
-    CHECK(parse_str("2 * 2 + 3")->interp()->equals(new NumVal(7)));
-    CHECK(parse_str("2 * (2 + 3)")->interp()->equals(new NumVal(10)));
-    CHECK(parse_str("(4)")->interp()->equals(new NumVal(4)));
+    CHECK(parse_str("5")->interp()->equals(NEW(NumVal)(5)));
+    CHECK(parse_str("-5")->interp()->equals(NEW(NumVal)(-5)));
+    CHECK(parse_str("5 + 2")->interp()->equals(NEW(NumVal)(7)));
+    CHECK(parse_str("5 + -10")->interp()->equals(NEW(NumVal)((-5))));
+    CHECK(parse_str("    5 + 2")->interp()->equals(NEW(NumVal)(7)));
+    CHECK(parse_str("4 * 2")->interp()->equals(NEW(NumVal)(8)));
+    CHECK(parse_str("(4 * 2)")->interp()->equals(NEW(NumVal)(8)));
+    CHECK(parse_str("2 * 2 + 3")->interp()->equals(NEW(NumVal)(7)));
+    CHECK(parse_str("2 * (2 + 3)")->interp()->equals(NEW(NumVal)(10)));
+    CHECK(parse_str("(4)")->interp()->equals(NEW(NumVal)(4)));
 
     parse_str("this")->pretty_to_string();
 
@@ -250,33 +243,33 @@ TEST_CASE("parse"){
     CHECK(parse_str("this + that")->pretty_to_string() == "this + that");
 
     //
-    CHECK(parse_str("_let x = 4 _in x + -2")->interp()->equals(new NumVal(2)));
+    CHECK(parse_str("_let x = 4 _in x + -2")->interp()->equals(NEW(NumVal)(2)));
     CHECK(parse_str("_let x = 4 _in x + -2")->pretty_to_string() ==
-    "_let x = 4\n_in  x + -2");
+          "_let x = 4\n_in  x + -2");
     CHECK(parse_str("_let x = 4 _in x + -2")->to_string() == "(_let x=4 _in (x+-2))");
     CHECK_THROWS_WITH(parse_str("_lt x = 4 _in x + -2")->interp(), "invalid input: _lt");
 }
 
 TEST_CASE("Val Tests"){
     CHECK(run("1 + 2") == "3");
-    CHECK((new NumVal(3))->equals(new NumVal(3)));
-    CHECK((new NumVal(3))->equals(new NumVal(2)) == false);
+    CHECK((NEW(NumVal)(3))->equals(NEW(NumVal)(3)));
+    CHECK((NEW(NumVal)(3))->equals(NEW(NumVal)(2)) == false);
     CHECK(run("1 + 2") != "2");
     CHECK(run("1 + -2") == "-1");
-    CHECK((new NumVal(2))->to_string() == "2");
-    NumVal* n1 = new NumVal(2);
-    CHECK(n1->to_expr()->equals(new NumExpr(2)));
-    CHECK(n1->add_to(new NumVal(4))->equals(new NumVal(6)));
-    CHECK(n1->mult_to(new NumVal(4))->equals(new NumVal(8)));
+    CHECK((NEW(NumVal)(2))->to_string() == "2");
+    PTR(NumVal) n1 = NEW(NumVal)(2);
+    CHECK(n1->to_expr()->equals(NEW(NumExpr)(2)));
+    CHECK(n1->add_to(NEW(NumVal)(4))->equals(NEW(NumVal)(6)));
+    CHECK(n1->mult_to(NEW(NumVal)(4))->equals(NEW(NumVal)(8)));
 }
 
 TEST_CASE("Refactor Tests"){
     CHECK(run("2 == 2") == "_true");
     CHECK(run("2 == 3") == "_false");
     CHECK((run("_let same = 1 == 2\n"
-        "_in  _if 1 == 2\n"
-        "     _then _false + 5\n"
-        "     _else 88")) == "88");
+               "_in  _if 1 == 2\n"
+               "     _then _false + 5\n"
+               "     _else 88")) == "88");
 
     CHECK(parse_str("_let same = 1 == 2\n"
                     "_in  _if 1 == 2\n"
@@ -286,8 +279,8 @@ TEST_CASE("Refactor Tests"){
                                                             "     _then _false + 5\n"
                                                             "     _else 88");
     CHECK_THROWS_WITH(run("_if 4 + 1\n"
-              "_then 2\n"
-              "_else 3"), "NumVal cannot be true or false");
+                          "_then 2\n"
+                          "_else 3"), "NumVal cannot be true or false");
 }
 TEST_CASE("Function tests"){
     CHECK(parse_str("_fun (x) x + 1")->to_string() == "(_fun (x) (x+1))");
@@ -301,31 +294,31 @@ TEST_CASE("Function tests"){
                     "_in f(10)")->pretty_to_string() == "_let f = _fun (x)\n"
                                                         "           x + 1\n"
                                                         "_in  f(10)");
-    CHECK(parse_str("_fun (x) x + 1")->interp()->equals(new FunVal("x", new AddExpr(new VarExpr("x"), new NumExpr(1)))));
+    CHECK(parse_str("_fun (x) x + 1")->interp()->equals(NEW(FunVal)("x", NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(1)))));
     CHECK_THROWS_WITH(parse_str("f(10)")->interp(), "Error: a variable has no value: f");
-    CHECK(parse_str("f(10)")->equals(new CallExpr(new VarExpr("f"), new NumExpr(10))));
+    CHECK(parse_str("f(10)")->equals(NEW(CallExpr)(NEW(VarExpr)("f"), NEW(NumExpr)(10))));
 
     CHECK(parse_str("_let f = _fun (x) x + 1\n"
-                    "_in f(10)")->interp()->equals(new NumVal(11)));
+                    "_in f(10)")->interp()->equals(NEW(NumVal)(11)));
     CHECK(parse_str("_let factrl = _fun (factrl)\n"
-                       "                _fun (x)\n"
-                       "                  _if x == 1\n"
-                       "                  _then 1\n"
-                       "                  _else x * factrl(factrl)(x + -1)\n"
-                       "_in  factrl(factrl)(10)"
-                       )->pretty_to_string() ==
-                       "_let factrl = _fun (factrl)\n"
-                       "                _fun (x)\n"
-                       "                  _if x == 1\n"
-                       "                  _then 1\n"
-                       "                  _else x * factrl(factrl)(x + -1)\n"
-                       "_in  factrl(factrl)(10)");
+                    "                _fun (x)\n"
+                    "                  _if x == 1\n"
+                    "                  _then 1\n"
+                    "                  _else x * factrl(factrl)(x + -1)\n"
+                    "_in  factrl(factrl)(10)"
+    )->pretty_to_string() ==
+          "_let factrl = _fun (factrl)\n"
+          "                _fun (x)\n"
+          "                  _if x == 1\n"
+          "                  _then 1\n"
+          "                  _else x * factrl(factrl)(x + -1)\n"
+          "_in  factrl(factrl)(10)");
     CHECK(parse_str("_let f = _fun (g) \n"
                     "              g(5) \n"
                     "   _in _let g = _fun (y) \n"
                     "                  y + 2 \n"
                     "       _in f(g)")
-                    ->interp()->equals(new NumVal(7)));
+                  ->interp()->equals(NEW(NumVal)(7)));
 }
 
 

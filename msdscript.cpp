@@ -48,11 +48,13 @@ void use_arguments(int argc, char* argv[]){
     }
 }
 static istringstream getEntireInput(std::istream &in){
+
     string toReturn;
     string temp;
     while(std::getline(cin, temp)){
         toReturn+=temp;
     }
+
     istringstream str(toReturn);
     return str;
 }
@@ -67,8 +69,8 @@ void help(){
          << endl;
     exit(0);
 }
-static Expr *parse_expr(std::istream &in) {
-    Expr *e;
+static PTR(Expr) parse_expr(std::istream &in) {
+    PTR(Expr) e;
     e = parse_comparg(in);
     skip_whitespace(in);
     int c = in.peek();
@@ -78,8 +80,8 @@ static Expr *parse_expr(std::istream &in) {
         c = in.peek();
         if(c == '='){
             consume(in, '=');
-            Expr *rhs = parse_expr(in);
-            return new EqExpr(e, rhs);
+            PTR(Expr) rhs = parse_expr(in);
+            return NEW(EqExpr)(e, rhs);
         } else {
             in.seekg(currPos);
             return e;
@@ -87,44 +89,44 @@ static Expr *parse_expr(std::istream &in) {
     } else
         return e;
 }
-Expr *parse_comparg(std::istream &in){
-    Expr *e;
+PTR(Expr) parse_comparg(std::istream &in){
+    PTR(Expr) e;
     e = parse_addend(in);
     skip_whitespace(in);
     int c = in.peek();
     if (c == '+') {
         consume(in, '+');
-        Expr *rhs = parse_expr(in);
-        return new AddExpr(e, rhs);
+        PTR(Expr) rhs = parse_expr(in);
+        return NEW(AddExpr)(e, rhs);
     } else
         return e;
 }
 
-Expr *parse_addend(std::istream &in){
-    Expr* e;
+PTR(Expr) parse_addend(std::istream &in){
+    PTR(Expr) e;
     e = parse_multicand(in);
     skip_whitespace(in);
     int c = in.peek();
     if(c == '*'){
         consume(in, '*');
-        Expr* rhs = parse_addend(in);
-        return new MultExpr(e, rhs);
+        PTR(Expr) rhs = parse_addend(in);
+        return NEW(MultExpr)(e, rhs);
     } else
         return e;
 }
-Expr *parse_multicand(std::istream &in) {
-    Expr* e;
+PTR(Expr) parse_multicand(std::istream &in) {
+    PTR(Expr) e;
     e = parse_inner(in);
     while (in.peek() == '(') {
         consume(in, '(');
-        Expr *actual_arg = parse_expr(in);
+        PTR(Expr) actual_arg = parse_expr(in);
         consume(in, ')');
-        CallExpr *temp = new CallExpr(e, actual_arg);
+        PTR(CallExpr) temp = NEW(CallExpr)(e, actual_arg);
         e = temp;
     }
     return e;
 }
-Expr *parse_inner(std::istream &in) {
+PTR(Expr) parse_inner(std::istream &in) {
     skip_whitespace(in);
     int c = in.peek();
     // if c is a number parse it
@@ -133,7 +135,7 @@ Expr *parse_inner(std::istream &in) {
     // if c is a parens parse the expr inside it
     else if (c == '(') {
         consume(in, '(');
-        Expr *e = parse_expr(in);
+        PTR(Expr) e = parse_expr(in);
         skip_whitespace(in);
         c = in.get();
         if (c != ')')
@@ -153,9 +155,9 @@ Expr *parse_inner(std::istream &in) {
         else if(keyword == "_fun")
             return parse_fun(in);
         else if(keyword == "_false")
-            return new BoolExpr(false);
+            return NEW(BoolExpr)(false);
         else if(keyword == "_true")
-            return new BoolExpr(true);
+            return NEW(BoolExpr)(true);
         else
             throw std::runtime_error("invalid input: " + keyword);
     } else {
@@ -163,7 +165,7 @@ Expr *parse_inner(std::istream &in) {
         throw std::runtime_error("invalid input: ");
     }
 }
-Expr *parse_num(std::istream &in) {
+PTR(Expr) parse_num(std::istream &in) {
     int n = 0;
     bool negative = false;
     if (in.peek() == '-') {
@@ -180,27 +182,27 @@ Expr *parse_num(std::istream &in) {
     }
     if (negative)
         n = -n;
-    return new NumExpr(n);
+    return NEW(NumExpr)(n);
 }
-Expr *parse_if(std::istream &in){
-    Expr* _if = parse_expr(in);
+PTR(Expr) parse_if(std::istream &in){
+    PTR(Expr) _if = parse_expr(in);
 
     skip_whitespace(in);
     if(!parse_keyword(in, "_then"))
         throw std::runtime_error("invalid input for '_if'");
 
-    Expr* _then = parse_expr(in);
+    PTR(Expr) _then = parse_expr(in);
 
     skip_whitespace(in);
     if(!parse_keyword(in, "_else"))
         throw std::runtime_error("invalid input for '_if'");
 
-    Expr* _else = parse_expr(in);
-    return new IfExpr(_if, _then, _else);
+    PTR(Expr) _else = parse_expr(in);
+    return NEW(IfExpr)(_if, _then, _else);
 }
-Expr *parse_let(std::istream &in){
-    Expr* e = parse_expr(in);
-    VarExpr* lhs = dynamic_cast<VarExpr*>(e);
+PTR(Expr) parse_let(std::istream &in){
+    PTR(Expr) e = parse_expr(in);
+    PTR(VarExpr) lhs = CAST(VarExpr)(e);
     if(lhs == nullptr)
         throw std::runtime_error("invalid input for '_let'");
 
@@ -208,23 +210,23 @@ Expr *parse_let(std::istream &in){
     if(!parse_keyword(in, "="))
         throw std::runtime_error("invalid input for '_let'");
 
-    Expr* rhs = parse_expr(in);
+    PTR(Expr) rhs = parse_expr(in);
 
     skip_whitespace(in);
     if(!parse_keyword(in, "_in"))
         throw std::runtime_error("invalid input for '_let'");
-    Expr* body = parse_expr(in);
-    return new LetExpr(lhs, rhs, body);
+    PTR(Expr) body = parse_expr(in);
+    return NEW(LetExpr)(lhs, rhs, body);
 }
-Expr *parse_fun(std::istream &in){
-    Expr* e = parse_expr(in);
-    VarExpr* actual_arg = dynamic_cast<VarExpr*>(e);
+PTR(Expr) parse_fun(std::istream &in){
+    PTR(Expr) e = parse_expr(in);
+    PTR(VarExpr) actual_arg = CAST(VarExpr)(e);
     if(actual_arg == nullptr)
         throw std::runtime_error("invalid input for '_fun'");
-    Expr* body = parse_expr(in);
-    return new FunExpr(actual_arg, body);
+    PTR(Expr) body = parse_expr(in);
+    return NEW(FunExpr)(actual_arg, body);
 }
-Expr *parse_var(std::istream &in){
+PTR(Expr) parse_var(std::istream &in){
     string varName;
     char c;
     while (in.get(c)){
@@ -232,24 +234,24 @@ Expr *parse_var(std::istream &in){
         if(in.peek() == ' ' || in.peek() == ')' || in.peek() == '(')
             break;
     }
-    return new VarExpr(varName);
+    return NEW(VarExpr)(varName);
 }
-Expr *parse_bool(std::istream &in){
+PTR(Expr) parse_bool(std::istream &in){
     string boolStr;
     in >> boolStr;
     if(boolStr=="_true")
-        return new BoolExpr(true);
+        return NEW(BoolExpr)(true);
     else
-        return new BoolExpr(false);
+        return NEW(BoolExpr)(false);
 }
 bool parse_keyword(std::istream &in, const string& expected){
     string keyword;
     in >> keyword;
     return keyword == expected;
 }
-Expr* parse_str(std::string s){
+PTR(Expr) parse_str(std::string s){
     istringstream str(s);
-    Expr* e = parse_expr(str);
+    PTR(Expr) e = parse_expr(str);
     return e;
 }
 static void consume(std::istream &in, int expect) {
