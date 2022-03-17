@@ -11,7 +11,9 @@
 
 // Static test assistance method returning a string representing the value of a given string expression
 static std::string run(const std::string& s){
-    return parse_str(s)->interp()->to_string();
+    PTR(Expr) e = parse_str(s);
+    PTR(Val) v = e->interp();
+    return v->to_string();
 }
 
 int test(char* argv[]){
@@ -264,6 +266,11 @@ TEST_CASE("Val Tests"){
 }
 
 TEST_CASE("Refactor Tests"){
+    CHECK(run("_let x = _true\n"
+              "_in _if x\n"
+              "    _then 1\n"
+              "    _else 2") == "1");
+    CHECK(run("2 == (1+1)") == "_true");
     CHECK(run("2 == 2") == "_true");
     CHECK(run("2 == 3") == "_false");
     CHECK((run("_let same = 1 == 2\n"
@@ -284,6 +291,7 @@ TEST_CASE("Refactor Tests"){
 }
 TEST_CASE("Function tests"){
     CHECK(parse_str("_fun (x) x + 1")->to_string() == "(_fun (x) (x+1))");
+    CHECK(parse_str("_fun(x)x + 1")->to_string() == "(_fun (x) (x+1))");
     CHECK(parse_str("_fun (x) x + 1")->pretty_to_string() == "_fun (x)\n"
                                                              "  x + 1");
     CHECK(parse_str("f(10)")->pretty_to_string() == "f(10)");
@@ -319,6 +327,14 @@ TEST_CASE("Function tests"){
                     "                  y + 2 \n"
                     "       _in f(g)")
                   ->interp()->equals(NEW(NumVal)(7)));
+    CHECK(parse_str("_let x = 1\n"
+                    "_in _let y = 2\n"
+                    "_in _let z = 2\n"
+                    "_in _if x == y\n"
+                    "    _then 0\n"
+                    "    _else _if (y == z) == _true\n"
+                    "    _then 3\n"
+                    "    _else 0")->interp()->equals(NEW(NumVal)(3)));
 }
 
 

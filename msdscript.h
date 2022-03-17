@@ -39,14 +39,12 @@ PTR(Expr) parse_if(std::istream &in);
 // When given an istream containing a BoolExpr, return an Expr representing the BoolExpr
 PTR(Expr) parse_bool(std::istream &in);
 // Returns whether a keyword from in matches the expected keyword
-bool parse_keyword(std::istream &in, const string& expected);
+string parse_keyword(std::istream &in);
 // Returns an Expr when given a std::string describing the Expr
 static PTR(Expr) parse_expr(std::istream &in);
 // Gets the next int in the input stream, advancing the stream forward. If the int isn't what is expected, an error message is displayed.
 static void consume(std::istream &in, int expect);
 // Skips the stream forward until it encounters the first non-whitespace.
 static void skip_whitespace(std::istream &in);
-// Returns a string of the entire user intput. Waits until ctrl+d or end of file is reached
-static istringstream getEntireInput(std::istream &in);
 
 #endif

@@ -30,33 +30,19 @@ void use_arguments(int argc, char* argv[]){
                 throw logic_error("Tests failed");
             break;
         } else if(argvArr[i] == "--interp"){
-            istringstream str = getEntireInput(cin);
-            string interpMe = parse_expr(str)->interp()->to_string();
+            string interpMe = parse_expr(cin)->interp()->to_string();
             cout << interpMe << endl;
             break;
         } else if(argvArr[i] == "--print"){
-            istringstream str = getEntireInput(cin);
-            printExpr(parse_expr(str));
+            printExpr(parse_expr(cin));
             break;
         } else if(argvArr[i] == "--pretty-print"){
-            istringstream str = getEntireInput(cin);
-            printPrettyExpr(parse_expr(str));
+            printPrettyExpr(parse_expr(cin));
             break;
         } else{
             throw invalid_argument("Invalid command");
         }
     }
-}
-static istringstream getEntireInput(std::istream &in){
-
-    string toReturn;
-    string temp;
-    while(std::getline(cin, temp)){
-        toReturn+=temp;
-    }
-
-    istringstream str(toReturn);
-    return str;
 }
 void help(){
     cout << "Welcome to MSDScript!\n"
@@ -146,8 +132,7 @@ PTR(Expr) parse_inner(std::istream &in) {
         return parse_var(in);
     // if c is an underscore, parse it as a let
     } else if(c == '_'){
-        string keyword;
-        in >> keyword;
+        string keyword = parse_keyword(in);
         if(keyword == "_let")
             return parse_let(in);
         else if(keyword == "_if")
@@ -188,13 +173,13 @@ PTR(Expr) parse_if(std::istream &in){
     PTR(Expr) _if = parse_expr(in);
 
     skip_whitespace(in);
-    if(!parse_keyword(in, "_then"))
+    if(parse_keyword(in) != "_then")
         throw std::runtime_error("invalid input for '_if'");
 
     PTR(Expr) _then = parse_expr(in);
 
     skip_whitespace(in);
-    if(!parse_keyword(in, "_else"))
+    if(parse_keyword(in) != "_else")
         throw std::runtime_error("invalid input for '_if'");
 
     PTR(Expr) _else = parse_expr(in);
@@ -207,13 +192,13 @@ PTR(Expr) parse_let(std::istream &in){
         throw std::runtime_error("invalid input for '_let'");
 
     skip_whitespace(in);
-    if(!parse_keyword(in, "="))
+    if(parse_keyword(in) != "=")
         throw std::runtime_error("invalid input for '_let'");
 
     PTR(Expr) rhs = parse_expr(in);
 
     skip_whitespace(in);
-    if(!parse_keyword(in, "_in"))
+    if(parse_keyword(in) != "_in")
         throw std::runtime_error("invalid input for '_let'");
     PTR(Expr) body = parse_expr(in);
     return NEW(LetExpr)(lhs, rhs, body);
@@ -231,23 +216,27 @@ PTR(Expr) parse_var(std::istream &in){
     char c;
     while (in.get(c)){
         varName += c;
-        if(in.peek() == ' ' || in.peek() == ')' || in.peek() == '(')
+        if(in.peek() == ')' || in.peek() == '(' || isspace(in.peek()))
             break;
     }
     return NEW(VarExpr)(varName);
 }
 PTR(Expr) parse_bool(std::istream &in){
-    string boolStr;
-    in >> boolStr;
+    string boolStr = parse_keyword(in);
     if(boolStr=="_true")
         return NEW(BoolExpr)(true);
     else
         return NEW(BoolExpr)(false);
 }
-bool parse_keyword(std::istream &in, const string& expected){
+string parse_keyword(std::istream &in) {
     string keyword;
-    in >> keyword;
-    return keyword == expected;
+    char c;
+    while(in.get(c)){
+        keyword.push_back(c);
+        if(isspace(in.peek()) || in.peek() == '(' || in.peek() == ')')
+            break;
+    }
+    return keyword;
 }
 PTR(Expr) parse_str(std::string s){
     istringstream str(s);

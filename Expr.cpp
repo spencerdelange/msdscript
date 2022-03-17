@@ -138,7 +138,7 @@ bool EqExpr::equals(PTR(Expr) e) {
                 && this->rhs->equals(a->rhs));
 }
 PTR(Val) EqExpr::interp() {
-    return NEW(BoolVal)(lhs->equals(rhs));
+    return NEW(BoolVal)(lhs->interp()->equals(rhs->interp()));
 }
 
 PTR(Expr) EqExpr::subst(std::string to_replace, PTR(Expr) substitute_expr) {
@@ -292,7 +292,10 @@ PTR(Val) IfExpr::interp() {
 }
 
 PTR(Expr) IfExpr::subst(std::string to_replace, PTR(Expr) substitute_expr) {
-    PTR(IfExpr) temp = NEW(IfExpr)(_if->subst(to_replace, substitute_expr), _then->subst(to_replace, substitute_expr), _else->subst(to_replace, substitute_expr));
+    PTR(Expr) i = _if->subst(to_replace, substitute_expr);
+    PTR(Expr) t = _then->subst(to_replace, substitute_expr);
+    PTR(Expr) e = _else->subst(to_replace, substitute_expr);
+    PTR(IfExpr) temp = NEW(IfExpr)(i, t, e);
     return temp;
 }
 void IfExpr::print(std::ostream &output) {
@@ -345,7 +348,8 @@ bool LetExpr::equals(PTR(Expr) e) {
 }
 PTR(Val) LetExpr::interp() {
     PTR(Val) rhs_val = rhs->interp();
-    PTR(Expr) e = body->subst(lhs->name, rhs_val->to_expr());
+    PTR(Expr) rhs_expr = rhs_val->to_expr();
+    PTR(Expr) e = body->subst(lhs->name, rhs_expr);
     return e->interp();
 }
 

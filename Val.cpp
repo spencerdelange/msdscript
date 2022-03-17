@@ -104,7 +104,6 @@ bool FunVal::is_true(){
 }
 PTR(Val) FunVal::call(PTR(Val) actual_arg){
     // this is a function expr turned into its FunVal that is performing the call. Subst the actual_arg as a NumExpr into the formal_arg place and interp
-    PTR(FunExpr) e1 = CAST(FunExpr)(this->to_expr());
-    PTR(Expr) r = e1->body->subst(e1->formal_arg->name, actual_arg->to_expr());
+    PTR(Expr) r = this->body->subst(formal_arg, actual_arg->to_expr());
     return r->interp();
 }
