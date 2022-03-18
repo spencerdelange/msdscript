@@ -9,14 +9,13 @@
 #include <string>
 #include "pointer.h"
 
-// included so Expr* can be in the method definitions
+// included so Expr and Env can be in the method definitions
 class Expr;
+class Env;
 
 // Class representing a value
-class Val {
+CLASS(Val) {
 public:
-    // Returns the Expr representation of a value
-    virtual PTR(Expr) to_expr() = 0;
     // Returns whether this Val is equal to another Val, v
     virtual bool equals(PTR(Val) v) = 0;
     // Returns a Val representing this val plus another val
@@ -28,7 +27,7 @@ public:
     // Returns the value of a function being called by the given argument value
     virtual PTR(Val) call(PTR(Val) actual_arg) = 0;
     // Returns a string representing this value
-    std::string to_string();
+    virtual std::string to_string() = 0;
     // Satisfies 'virtual destructors' warning
     virtual ~Val();
 };
@@ -38,10 +37,8 @@ class NumVal : public Val {
 public:
     int rep;
     // Constructs a NumVal object with a value of given rep
-    explicit NumVal(int rep);
+    NumVal(int rep);
     // Returns an Expr representing this value
-    PTR(Expr) to_expr() override;
-    // Returns whether this is equal to given Val v
     bool equals(PTR(Val) v) override;
     // Returns a Val representing this val plus another val, v
     PTR(Val) add_to(PTR(Val) other_val) override;
@@ -51,6 +48,8 @@ public:
     bool is_true() override;
     // Returns the value of a function being called by the given argument value
     PTR(Val) call(PTR(Val) actual_arg) override;
+    // Returns a string representing this value
+    std::string to_string() override;
 };
 
 // Value subclass representing a boolean
@@ -60,8 +59,6 @@ public:
     // Constructs a BoolVal object with a value of given rep
     explicit BoolVal(bool rep);
     // Returns an Expr representing this value
-    PTR(Expr) to_expr() override;
-    // Returns whether this is equal to given Val v
     bool equals(PTR(Val) v) override;
     // Returns a Val representing this val plus another val, v
     PTR(Val) add_to(PTR(Val) other_val) override;
@@ -71,6 +68,8 @@ public:
     bool is_true() override;
     // Returns the value of a function being called by the given argument value
     PTR(Val) call(PTR(Val) actual_arg) override;
+    // Returns a string representing this value
+    std::string to_string() override;
 };
 
 // Value subclass representing a function's value
@@ -78,11 +77,10 @@ class FunVal : public Val {
 public:
     std::string formal_arg;
     PTR(Expr) body;
+    PTR(Env) env;
     // Constructs a FunVal object with a value of given rep
-    explicit FunVal(std::string formal_arg, PTR(Expr) body);
+    explicit FunVal(std::string formal_arg, PTR(Expr) body, PTR(Env) env);
     // Returns an Expr representing this value
-    PTR(Expr) to_expr() override;
-    // Returns whether this is equal to given Val v
     bool equals(PTR(Val) v) override;
     // Returns a Val representing this val plus another val, v
     PTR(Val) add_to(PTR(Val) other_val) override;
@@ -92,6 +90,8 @@ public:
     bool is_true() override;
     // Returns the value of a function being called by the given argument value
     PTR(Val) call(PTR(Val) actual_arg) override;
+    // Returns a string representing this value
+    std::string to_string() override;
 };
 
 #endif //MSDSCRIPT_VAL_H

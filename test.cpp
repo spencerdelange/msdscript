@@ -8,11 +8,12 @@
 #include "Expr.h"
 #include "msdscript.h"
 #include "Val.h"
+#include "Env.h"
 
 // Static test assistance method returning a string representing the value of a given string expression
 static std::string run(const std::string& s){
     PTR(Expr) e = parse_str(s);
-    PTR(Val) v = e->interp();
+    PTR(Val) v = e->interp(Env::empty);
     return v->to_string();
 }
 
@@ -53,28 +54,28 @@ TEST_CASE("interp tests") {
     PTR(AddExpr) a2 = NEW(AddExpr)(n2, n3);
     PTR(MultExpr) m1 = NEW(MultExpr)(n2, n3);
     PTR(MultExpr) m2 = NEW(MultExpr)(a2, m1);
-    CHECK(n2->interp()->equals(NEW(NumVal)(2)));
-    CHECK(a1->interp()->equals(NEW(NumVal)(5)));
-    CHECK(m1->interp()->equals(NEW(NumVal)(6)));
-    CHECK(m2->interp()->equals(NEW(NumVal)(30)));
+    CHECK(n2->interp(Env::empty)->equals(NEW(NumVal)(2)));
+    CHECK(a1->interp(Env::empty)->equals(NEW(NumVal)(5)));
+    CHECK(m1->interp(Env::empty)->equals(NEW(NumVal)(6)));
+    CHECK(m2->interp(Env::empty)->equals(NEW(NumVal)(30)));
     PTR(VarExpr) v1 = NEW(VarExpr)("a");
-    CHECK_THROWS_WITH(v1->interp(), "Error: a variable has no value: a");
+    CHECK_THROWS_WITH(v1->interp(Env::empty), "free variable: a");
     PTR(LetExpr) l1 = NEW(LetExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(1), NEW(NumExpr)(2));
-    CHECK(l1->interp()->equals(NEW(NumVal)(2)));
+    CHECK(l1->interp(Env::empty)->equals(NEW(NumVal)(2)));
     PTR(LetExpr) l2 = NEW(LetExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(2), NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5)));
-    CHECK(l2->interp()->equals(NEW(NumVal)(7)));
+    CHECK(l2->interp(Env::empty)->equals(NEW(NumVal)(7)));
 
     PTR(LetExpr) l3 = NEW(LetExpr)(NEW(VarExpr)("x"), NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(2)), NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(1)));
     PTR(LetExpr) l4 = NEW(LetExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5), l3);
-    CHECK(l4->interp()->equals(NEW(NumVal)(8)));
+    CHECK(l4->interp(Env::empty)->equals(NEW(NumVal)(8)));
 
     PTR(LetExpr) l5 = NEW(LetExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(6), NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(1)));
     PTR(LetExpr) l6 = NEW(LetExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5), l5);
-    CHECK(l6->interp()->equals(NEW(NumVal)(7)));
+    CHECK(l6->interp(Env::empty)->equals(NEW(NumVal)(7)));
 
     PTR(LetExpr) l7 = NEW(LetExpr)(NEW(VarExpr)("y"), NEW(NumExpr)(6), NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(1)));
     PTR(LetExpr) l8 = NEW(LetExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5), l7);
-    CHECK(l8->interp()->equals(NEW(NumVal)(6)));
+    CHECK(l8->interp(Env::empty)->equals(NEW(NumVal)(6)));
 }
 TEST_CASE("subst tests"){
     PTR(VarExpr) v1 = NEW(VarExpr)("a");
@@ -94,15 +95,6 @@ TEST_CASE("subst tests"){
     PTR(AddExpr) a3 = NEW(AddExpr)(v6, n7);
     CHECK(a2->equals(NEW(AddExpr)(v5, n7)));
     CHECK(a3->equals(NEW(AddExpr)(v6, n7)));
-
-
-
-    CHECK( (NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(7)))
-                   ->subst("x", NEW(VarExpr)("y"))
-                   ->equals(NEW(AddExpr)(NEW(VarExpr)("y"), NEW(NumExpr)(7))) );
-    CHECK( (NEW(MultExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(7)))
-                   ->subst("x", NEW(VarExpr)("y"))
-                   ->equals(NEW(MultExpr)(NEW(VarExpr)("y"), NEW(NumExpr)(7))) );
 }
 TEST_CASE("print"){
     PTR(NumExpr) n1 = NEW(NumExpr)(3);
@@ -212,7 +204,7 @@ TEST_CASE("pretty_print"){
     PTR(AddExpr) a10 = NEW(AddExpr)(m7, NEW(NumExpr)(1));
     CHECK(a10->pretty_to_string() == "5 * (_let x = 5\n"
                                      "     _in  x) + 1");
-    CHECK(a10->interp()->equals(NEW(NumVal)(26)));
+    CHECK(a10->interp(Env::empty)->equals(NEW(NumVal)(26)));
 
     PTR(AddExpr) a11 = NEW(AddExpr)(NEW(LetExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5), NEW(VarExpr)("x")), NEW(NumExpr)(1));
     CHECK(a11->pretty_to_string() == "(_let x = 5\n"
@@ -221,20 +213,20 @@ TEST_CASE("pretty_print"){
     PTR(MultExpr) m8 = NEW(MultExpr)(NEW(NumExpr)(5), NEW(LetExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5), NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(1))));
     CHECK(m8->pretty_to_string() == "5 * _let x = 5\n"
                                     "    _in  x + 1");
-    CHECK(m8->interp()->equals(NEW(NumVal)(30)));
+    CHECK(m8->interp(Env::empty)->equals(NEW(NumVal)(30)));
 }
 
 TEST_CASE("parse"){
-    CHECK(parse_str("5")->interp()->equals(NEW(NumVal)(5)));
-    CHECK(parse_str("-5")->interp()->equals(NEW(NumVal)(-5)));
-    CHECK(parse_str("5 + 2")->interp()->equals(NEW(NumVal)(7)));
-    CHECK(parse_str("5 + -10")->interp()->equals(NEW(NumVal)((-5))));
-    CHECK(parse_str("    5 + 2")->interp()->equals(NEW(NumVal)(7)));
-    CHECK(parse_str("4 * 2")->interp()->equals(NEW(NumVal)(8)));
-    CHECK(parse_str("(4 * 2)")->interp()->equals(NEW(NumVal)(8)));
-    CHECK(parse_str("2 * 2 + 3")->interp()->equals(NEW(NumVal)(7)));
-    CHECK(parse_str("2 * (2 + 3)")->interp()->equals(NEW(NumVal)(10)));
-    CHECK(parse_str("(4)")->interp()->equals(NEW(NumVal)(4)));
+    CHECK(parse_str("5")->interp(Env::empty)->equals(NEW(NumVal)(5)));
+    CHECK(parse_str("-5")->interp(Env::empty)->equals(NEW(NumVal)(-5)));
+    CHECK(parse_str("5 + 2")->interp(Env::empty)->equals(NEW(NumVal)(7)));
+    CHECK(parse_str("5 + -10")->interp(Env::empty)->equals(NEW(NumVal)((-5))));
+    CHECK(parse_str("    5 + 2")->interp(Env::empty)->equals(NEW(NumVal)(7)));
+    CHECK(parse_str("4 * 2")->interp(Env::empty)->equals(NEW(NumVal)(8)));
+    CHECK(parse_str("(4 * 2)")->interp(Env::empty)->equals(NEW(NumVal)(8)));
+    CHECK(parse_str("2 * 2 + 3")->interp(Env::empty)->equals(NEW(NumVal)(7)));
+    CHECK(parse_str("2 * (2 + 3)")->interp(Env::empty)->equals(NEW(NumVal)(10)));
+    CHECK(parse_str("(4)")->interp(Env::empty)->equals(NEW(NumVal)(4)));
 
     parse_str("this")->pretty_to_string();
 
@@ -245,11 +237,11 @@ TEST_CASE("parse"){
     CHECK(parse_str("this + that")->pretty_to_string() == "this + that");
 
     //
-    CHECK(parse_str("_let x = 4 _in x + -2")->interp()->equals(NEW(NumVal)(2)));
+    CHECK(parse_str("_let x = 4 _in x + -2")->interp(Env::empty)->equals(NEW(NumVal)(2)));
     CHECK(parse_str("_let x = 4 _in x + -2")->pretty_to_string() ==
           "_let x = 4\n_in  x + -2");
     CHECK(parse_str("_let x = 4 _in x + -2")->to_string() == "(_let x=4 _in (x+-2))");
-    CHECK_THROWS_WITH(parse_str("_lt x = 4 _in x + -2")->interp(), "invalid input: _lt");
+    CHECK_THROWS_WITH(parse_str("_lt x = 4 _in x + -2")->interp(Env::empty), "invalid input: _lt");
 }
 
 TEST_CASE("Val Tests"){
@@ -260,7 +252,6 @@ TEST_CASE("Val Tests"){
     CHECK(run("1 + -2") == "-1");
     CHECK((NEW(NumVal)(2))->to_string() == "2");
     PTR(NumVal) n1 = NEW(NumVal)(2);
-    CHECK(n1->to_expr()->equals(NEW(NumExpr)(2)));
     CHECK(n1->add_to(NEW(NumVal)(4))->equals(NEW(NumVal)(6)));
     CHECK(n1->mult_to(NEW(NumVal)(4))->equals(NEW(NumVal)(8)));
 }
@@ -302,12 +293,11 @@ TEST_CASE("Function tests"){
                     "_in f(10)")->pretty_to_string() == "_let f = _fun (x)\n"
                                                         "           x + 1\n"
                                                         "_in  f(10)");
-    CHECK(parse_str("_fun (x) x + 1")->interp()->equals(NEW(FunVal)("x", NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(1)))));
-    CHECK_THROWS_WITH(parse_str("f(10)")->interp(), "Error: a variable has no value: f");
+    CHECK_THROWS_WITH(parse_str("f(10)")->interp(Env::empty), "free variable: f");
     CHECK(parse_str("f(10)")->equals(NEW(CallExpr)(NEW(VarExpr)("f"), NEW(NumExpr)(10))));
 
     CHECK(parse_str("_let f = _fun (x) x + 1\n"
-                    "_in f(10)")->interp()->equals(NEW(NumVal)(11)));
+                    "_in f(10)")->interp(Env::empty)->equals(NEW(NumVal)(11)));
     CHECK(parse_str("_let factrl = _fun (factrl)\n"
                     "                _fun (x)\n"
                     "                  _if x == 1\n"
@@ -326,7 +316,7 @@ TEST_CASE("Function tests"){
                     "   _in _let g = _fun (y) \n"
                     "                  y + 2 \n"
                     "       _in f(g)")
-                  ->interp()->equals(NEW(NumVal)(7)));
+                  ->interp(Env::empty)->equals(NEW(NumVal)(7)));
     CHECK(parse_str("_let x = 1\n"
                     "_in _let y = 2\n"
                     "_in _let z = 2\n"
@@ -334,7 +324,7 @@ TEST_CASE("Function tests"){
                     "    _then 0\n"
                     "    _else _if (y == z) == _true\n"
                     "    _then 3\n"
-                    "    _else 0")->interp()->equals(NEW(NumVal)(3)));
+                    "    _else 0")->interp(Env::empty)->equals(NEW(NumVal)(3)));
 }
 
 

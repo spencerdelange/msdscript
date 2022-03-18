@@ -4,24 +4,18 @@
 
 #include "Val.h"
 #include "Expr.h"
+#include "Env.h"
 
 /////////////////////////////
 //// Val implementations ////
 /////////////////////////////
-std::string Val::to_string() {
-    return this->to_expr()->to_string();
-}
-
 Val::~Val() { }
 
 ////////////////////////////////
 //// NumVal implementations ////
 ////////////////////////////////
-NumVal::NumVal(int val){
-    this->rep = val;
-}
-PTR(Expr) NumVal::to_expr() {
-    return NEW(NumExpr)(rep);
+NumVal::NumVal(int rep){
+    this->rep = rep;
 }
 bool NumVal::equals(PTR(Val) v) {
     PTR(NumVal) n = CAST(NumVal)(v);
@@ -33,7 +27,7 @@ bool NumVal::equals(PTR(Val) v) {
 PTR(Val) NumVal::add_to(PTR(Val) other_val) {
     PTR(NumVal) other_num = CAST(NumVal)(other_val);
     if (other_num == nullptr) throw std::runtime_error("add of non-number");
-    return NEW(NumVal)(rep + other_num->rep);
+    return NEW(NumVal)(this->rep + other_num->rep);
 }
 PTR(Val) NumVal::mult_to(PTR(Val) other_val) {
     PTR(NumVal) other_num = CAST(NumVal)(other_val);
@@ -46,15 +40,15 @@ bool NumVal::is_true(){
 PTR(Val) NumVal::call(PTR(Val) actual_arg){
     throw std::runtime_error("NumVal is not a function that can be called");
 }
+std::string NumVal::to_string() {
+    return std::to_string(rep);
+}
 
 /////////////////////////////////
 //// BoolVal implementations ////
 /////////////////////////////////
 BoolVal::BoolVal(bool val){
     this->rep = val;
-}
-PTR(Expr) BoolVal::to_expr() {
-    return NEW(BoolExpr)(rep);
 }
 bool BoolVal::equals(PTR(Val) v) {
     PTR(BoolVal) n = CAST(BoolVal)(v);
@@ -76,15 +70,20 @@ PTR(Val) BoolVal::call(PTR(Val) actual_arg){
     throw std::runtime_error("BoolVal is not a function that can be called");
 }
 
+std::string BoolVal::to_string() {
+    if(rep)
+        return "_true";
+    else
+        return "_false";
+}
+
 /////////////////////////////////
 //// FunVal implementations ////
 /////////////////////////////////
-FunVal::FunVal(std::string formal_arg, PTR(Expr) body){
+FunVal::FunVal(std::string formal_arg, PTR(Expr) body, PTR(Env) env){
     this->formal_arg = formal_arg;
     this->body = body;
-}
-PTR(Expr) FunVal::to_expr() {
-    return NEW(FunExpr)(NEW(VarExpr)(formal_arg), body);
+    this->env = env;
 }
 bool FunVal::equals(PTR(Val) v) {
     PTR(FunVal) n = CAST(FunVal)(v);
@@ -103,7 +102,8 @@ bool FunVal::is_true(){
     throw std::runtime_error("FunVal cannot be true or false");
 }
 PTR(Val) FunVal::call(PTR(Val) actual_arg){
-    // this is a function expr turned into its FunVal that is performing the call. Subst the actual_arg as a NumExpr into the formal_arg place and interp
-    PTR(Expr) r = this->body->subst(formal_arg, actual_arg->to_expr());
-    return r->interp();
+    return body->interp(NEW(ExtendedEnv)(formal_arg, actual_arg, env));
+}
+std::string FunVal::to_string() {
+    return "[function]";
 }

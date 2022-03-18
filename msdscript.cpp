@@ -6,6 +6,7 @@
 #include "msdscript.h"
 #include "Expr.h"
 #include "test.h"
+#include "Env.h"
 
 int main(int argc, char* argv[]) {
     try{
@@ -30,7 +31,7 @@ void use_arguments(int argc, char* argv[]){
                 throw logic_error("Tests failed");
             break;
         } else if(argvArr[i] == "--interp"){
-            string interpMe = parse_expr(cin)->interp()->to_string();
+            string interpMe = parse_expr(cin)->interp(Env::empty)->to_string();
             cout << interpMe << endl;
             break;
         } else if(argvArr[i] == "--print"){
