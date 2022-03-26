@@ -236,7 +236,6 @@ TEST_CASE("parse"){
 
     CHECK(parse_str("this + that")->pretty_to_string() == "this + that");
 
-    //
     CHECK(parse_str("_let x = 4 _in x + -2")->interp(Env::empty)->equals(NEW(NumVal)(2)));
     CHECK(parse_str("_let x = 4 _in x + -2")->pretty_to_string() ==
           "_let x = 4\n_in  x + -2");
@@ -325,6 +324,15 @@ TEST_CASE("Function tests"){
                     "    _else _if (y == z) == _true\n"
                     "    _then 3\n"
                     "    _else 0")->interp(Env::empty)->equals(NEW(NumVal)(3)));
+    CHECK(parse_str("_let x = _true\n"
+                    "_in _if x\n"
+                    "    _then 1\n"
+                    "    _else 2")->interp(Env::empty)->equals(NEW(NumVal)(1)));
+    CHECK(parse_str("_let x = 1 == 2\n"
+                    "_in _if x\n"
+                    "    _then 1\n"
+                    "    _else 2")->interp(Env::empty)->equals(NEW(NumVal)(2)));
+    string test = "_let x = 1 == 2 _in _if x   _then 1   _else 2"
 }
 
 

@@ -62,19 +62,15 @@ static PTR(Expr) parse_expr(std::istream &in) {
     skip_whitespace(in);
     int c = in.peek();
     if (c == '=') {
-        int currPos = (int)in.tellg();
         consume(in, '=');
         c = in.peek();
         if(c == '='){
             consume(in, '=');
             PTR(Expr) rhs = parse_expr(in);
             return NEW(EqExpr)(e, rhs);
-        } else {
-            in.seekg(currPos);
-            return e;
         }
-    } else
-        return e;
+    }
+    return e;
 }
 PTR(Expr) parse_comparg(std::istream &in){
     PTR(Expr) e;
@@ -187,8 +183,7 @@ PTR(Expr) parse_if(std::istream &in){
     return NEW(IfExpr)(_if, _then, _else);
 }
 PTR(Expr) parse_let(std::istream &in){
-    PTR(Expr) e = parse_expr(in);
-    PTR(VarExpr) lhs = CAST(VarExpr)(e);
+    PTR(VarExpr) lhs = CAST(VarExpr)(parse_var(in));
     if(lhs == nullptr)
         throw std::runtime_error("invalid input for '_let'");
 
@@ -213,6 +208,7 @@ PTR(Expr) parse_fun(std::istream &in){
     return NEW(FunExpr)(actual_arg, body);
 }
 PTR(Expr) parse_var(std::istream &in){
+    skip_whitespace(in);
     string varName;
     char c;
     while (in.get(c)){
