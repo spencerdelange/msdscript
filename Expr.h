@@ -27,6 +27,8 @@ public:
     virtual bool equals(PTR(Expr) e) = 0;
     // Returns an int for the value of an expression
     virtual PTR(Val) interp(PTR(Env) env) = 0;
+    // Interprets one step in this expression
+    virtual void step_interp() = 0;
     // substitutes a variable in an expression with a given variable
     virtual void print(std::ostream& output) = 0;
     // Prints this Expr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
@@ -51,6 +53,8 @@ public:
     bool equals(PTR(Expr) e) override;
     // Returns the value of this number
     PTR(Val) interp(PTR(Env) env) override;
+    // Interprets one step in this expression
+    void step_interp() override;
     // substitutes a variable in an expression with a given variable
     void print(std::ostream& output) override;
     // Prints this NumExpr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
@@ -69,6 +73,8 @@ public:
     bool equals(PTR(Expr) e) override;
     // Returns the value of this number
     PTR(Val) interp(PTR(Env) env) override;
+    // Interprets one step in this expression
+    void step_interp() override;
     // substitutes a variable in an expression with a given variable
     void print(std::ostream& output) override;
     // Prints this BoolExpr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
@@ -87,6 +93,8 @@ public:
     bool equals(PTR(Expr) e) override;
     // A variable has no value, so throws a runtime_error
     PTR(Val) interp(PTR(Env) env) override;
+    // Interprets one step in this expression
+    void step_interp() override;
     // substitutes a variable in an expression with a given variable
     void print(std::ostream& output) override;
     // Prints this VarExpr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
@@ -106,6 +114,8 @@ public:
     bool equals(PTR(Expr) e) override;
     // Returns the value of this addition Expr
     PTR(Val) interp(PTR(Env) env) override;
+    // Interprets one step in this expression
+    void step_interp() override;
     // substitutes a variable in an expression with a given variable
     void print(std::ostream& output) override;
     // Prints this EqExpr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
@@ -125,6 +135,8 @@ public:
     bool equals(PTR(Expr) e) override;
     // Returns the value of this addition Expr
     PTR(Val) interp(PTR(Env) env) override;
+    // Interprets one step in this expression
+    void step_interp() override;
     // substitutes a variable in an expression with a given variable
     void print(std::ostream& output) override;
     // Prints this AddExpr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
@@ -144,6 +156,8 @@ public:
     bool equals(PTR(Expr) e) override;
     // Returns the value of this expression
     PTR(Val) interp(PTR(Env) env) override;
+    // Interprets one step in this expression
+    void step_interp() override;
     // substitutes a variable in an expression with a given variable
     void print(std::ostream& output) override;
     // Prints this MultExpr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
@@ -164,6 +178,8 @@ public:
     bool equals(PTR(Expr) e) override;
     // Returns the value of this let Expr
     PTR(Val) interp(PTR(Env) env) override;
+    // Interprets one step in this expression
+    void step_interp() override;
     // substitutes a variable in an expression with a given variable
     void print(std::ostream& output) override;
     // Prints this LetExpr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
@@ -184,6 +200,8 @@ public:
     bool equals(PTR(Expr) e) override;
     // Returns the value of this let Expr
     PTR(Val) interp(PTR(Env) env) override;
+    // Interprets one step in this expression
+    void step_interp() override;
     // Print's this IfExpr's string representation to a given std::ostream&
     void print(std::ostream& output) override;
     // Prints this IfExpr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
@@ -202,6 +220,8 @@ public:
     bool equals(PTR(Expr) e) override;
     // Returns the value of this let Expr
     PTR(Val) interp(PTR(Env) env) override;
+    // Interprets one step in this expression
+    void step_interp() override;
     // Print's this FunExpr's string representation to a given std::ostream&
     void print(std::ostream& output) override;
     // Prints this FunExpr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.
@@ -220,6 +240,8 @@ public:
     bool equals(PTR(Expr) e) override;
     // Returns the value of this let Expr
     PTR(Val) interp(PTR(Env) env) override;
+    // Interprets one step in this expression
+    void step_interp() override;
     // Print's this CallExpr's string representation to a given std::ostream&
     void print(std::ostream& output) override;
     // Prints this CallExpr's string representation to a given std::ostream& without unnecessary parentheses. Signs are associated to the right.

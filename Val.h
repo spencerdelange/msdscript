@@ -12,6 +12,7 @@
 // included so Expr and Env can be in the method definitions
 class Expr;
 class Env;
+class Cont;
 
 // Class representing a value
 CLASS(Val) {
@@ -90,6 +91,8 @@ public:
     bool is_true() override;
     // Returns the value of a function being called by the given argument value
     PTR(Val) call(PTR(Val) actual_arg) override;
+    // Does one call_step
+    void call_step(PTR(Val) actual_arg_val, PTR(Cont) rest);
     // Returns a string representing this value
     std::string to_string() override;
 };

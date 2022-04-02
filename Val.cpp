@@ -5,6 +5,7 @@
 #include "Val.h"
 #include "Expr.h"
 #include "Env.h"
+#include "Step.h"
 
 /////////////////////////////
 //// Val implementations ////
@@ -104,6 +105,13 @@ bool FunVal::is_true(){
 PTR(Val) FunVal::call(PTR(Val) actual_arg){
     return body->interp(NEW(ExtendedEnv)(formal_arg, actual_arg, env));
 }
+void FunVal::call_step(PTR(Val) actual_arg_val, PTR(Cont) rest) {
+    Step::mode = Step::interp_mode;
+    Step::expr = body;
+    Step::env = NEW(ExtendedEnv)(formal_arg, actual_arg_val, env);
+    Step::cont = rest;
+}
+
 std::string FunVal::to_string() {
     return "[function]";
 }

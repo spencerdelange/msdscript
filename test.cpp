@@ -9,6 +9,7 @@
 #include "msdscript.h"
 #include "Val.h"
 #include "Env.h"
+#include "Step.h"
 
 // Static test assistance method returning a string representing the value of a given string expression
 static std::string run(const std::string& s){
@@ -332,7 +333,10 @@ TEST_CASE("Function tests"){
                     "_in _if x\n"
                     "    _then 1\n"
                     "    _else 2")->interp(Env::empty)->equals(NEW(NumVal)(2)));
-    string test = "_let x = 1 == 2 _in _if x   _then 1   _else 2"
+    string test = "_let x = 1 == 2 _in _if x   _then 1   _else 2";
+}
+TEST_CASE("interp_by_step tests"){
+    CHECK( Step::interp_by_steps(parse_str("1"))->equals(NEW(NumVal)(1)) );
 }
 
 

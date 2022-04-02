@@ -7,6 +7,7 @@
 #include "Expr.h"
 #include "test.h"
 #include "Env.h"
+#include "Step.h"
 
 int main(int argc, char* argv[]) {
     try{
@@ -34,6 +35,10 @@ void use_arguments(int argc, char* argv[]){
             string interpMe = parse_expr(cin)->interp(Env::empty)->to_string();
             cout << interpMe << endl;
             break;
+        } else if(argvArr[i] == "--step"){
+            string result = Step::interp_by_steps(parse_expr(cin))->to_string();
+            cout << result << endl;
+            break;
         } else if(argvArr[i] == "--print"){
             printExpr(parse_expr(cin));
             break;
@@ -50,6 +55,7 @@ void help(){
             "Available commands:\n"
             "\t--help\n"
             "\t--interp\n"
+            "\t--interp-step\n"
             "\t--print\n"
             "\t--pretty-print\n"
             "\t--test"
