@@ -337,6 +337,26 @@ TEST_CASE("Function tests"){
 }
 TEST_CASE("interp_by_step tests"){
     CHECK( Step::interp_by_steps(parse_str("1"))->equals(NEW(NumVal)(1)) );
+
+
+    string test = "_let x = 1 == 2\n"
+                  "_in _if x\n"
+                  "    _then 1\n"
+                  "    _else 2";
+    PTR(Expr) testExpr = parse_str(test);
+    PTR(Val) testVal = Step::interp_by_steps(testExpr);
+    testVal->equals(NEW(NumVal)(2));
+
+    CHECK(Step::interp_by_steps(parse_str("_let x = 1 == 2\n"
+                    "_in _if x\n"
+                    "    _then 1\n"
+                    "    _else 2"))->equals(NEW(NumVal)(2)));
+    CHECK(Step::interp_by_steps(parse_str("_let x = _true\n"
+                    "_in _if x\n"
+                    "    _then 1\n"
+                    "    _else 2"))->equals(NEW(NumVal)(1)));
+    CHECK(Step::interp_by_steps(parse_str("_let f = _fun (x) x + 1\n"
+                    "_in f(10)"))->equals(NEW(NumVal)(11)));
 }
 
 
