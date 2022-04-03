@@ -1,7 +1,7 @@
 # Flags
-INCS = msdscript.h catch.h Expr.h test.h Val.h pointer.h Env.h
+INCS = msdscript.h catch.h Expr.h test.h Val.h pointer.h Env.h Cont.h Step.h
 
-OBJS = msdscript.o test.o Expr.o Val.o Env.o
+OBJS = msdscript.o test.o Expr.o Val.o Env.o Cont.o Step.o
 
 CXXFLAGS = --std=c++14 -O2
 
@@ -22,6 +22,10 @@ Expr.o: $(INCS)
 Val.o: $(INCS)
 
 Env.o: $(INCS)
+
+Step.o: $(INCS)
+
+Cont.o: $(INCS)
 
 # Remove output files and executables
 clean:

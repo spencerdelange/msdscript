@@ -337,8 +337,6 @@ TEST_CASE("Function tests"){
 }
 TEST_CASE("interp_by_step tests"){
     CHECK( Step::interp_by_steps(parse_str("1"))->equals(NEW(NumVal)(1)) );
-
-
     string test = "_let x = 1 == 2\n"
                   "_in _if x\n"
                   "    _then 1\n"
@@ -346,7 +344,6 @@ TEST_CASE("interp_by_step tests"){
     PTR(Expr) testExpr = parse_str(test);
     PTR(Val) testVal = Step::interp_by_steps(testExpr);
     testVal->equals(NEW(NumVal)(2));
-
     CHECK(Step::interp_by_steps(parse_str("_let x = 1 == 2\n"
                     "_in _if x\n"
                     "    _then 1\n"
