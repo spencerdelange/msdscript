@@ -334,7 +334,6 @@ TEST_CASE("Function tests"){
                     "    _then 1\n"
                     "    _else 2")->interp(Env::empty)->equals(NEW(NumVal)(2)));
     string test = "_let x = 1 == 2 _in _if x   _then 1   _else 2";
-    cout << parse_str("_let x = 1 == 2 _in _if x   _then 1   _else 2")->interp(Env::empty)->to_string() << endl;
 }
 TEST_CASE("interp_by_step tests"){
     CHECK( Step::interp_by_steps(parse_str("1"))->equals(NEW(NumVal)(1)) );
