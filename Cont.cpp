@@ -10,7 +10,7 @@
 
 PTR(Cont) Cont::done = NEW(DoneCont)();
 
-DoneCont::DoneCont() = default;
+DoneCont::DoneCont() {}
 void DoneCont::step_continue() {
     throw std::runtime_error("can't continue done");
 }
@@ -123,10 +123,10 @@ void ArgThenCallCont::step_continue() {
     Step::cont = NEW(CallCont)(Step::val, rest);
 }
 CallCont::CallCont(PTR(Val) toBeCalledVal, PTR(Cont) rest){
-    this->to_be_called_val = CAST(FunVal)(toBeCalledVal);
+    this->to_be_called_val = toBeCalledVal;
     this->rest = rest;
 }
 void CallCont::step_continue() {
-    CAST(FunVal)(to_be_called_val)->call_step(Step::val, rest);
+    to_be_called_val->call_step(Step::val, rest);
 }
 

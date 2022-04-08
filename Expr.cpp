@@ -44,7 +44,6 @@ PTR(Val) NumExpr::interp(PTR(Env) env) {
 void NumExpr::step_interp() {
     Step::mode = Step::continue_mode;
     Step::val = NEW(NumVal)(rep);
-    Step::cont = Step::cont; /* no-op */
 }
 void NumExpr::print(std::ostream& output) {
     output << this->rep;
@@ -111,6 +110,7 @@ PTR(Val) VarExpr::interp(PTR(Env) env) {
 }
 void VarExpr::step_interp() {
     Step::mode = Step::continue_mode;
+    Step::val = Step::env->lookup(name);
     Step::cont = Step::cont; /* no-op */
 }
 void VarExpr::print(std::ostream &output) {
@@ -194,7 +194,6 @@ PTR(Val) AddExpr::interp(PTR(Env) env) {
 void AddExpr::step_interp() {
     Step::mode = Step::interp_mode;
     Step::expr = lhs;
-    Step::env = Step::env; /* no-op, so could omit */
     Step::cont = NEW(RightThenAddCont)(rhs, Step::env, Step::cont);
 }
 void AddExpr::print(std::ostream &output) {
@@ -244,7 +243,6 @@ PTR(Val) MultExpr::interp(PTR(Env) env) {
 void MultExpr::step_interp() {
     Step::mode = Step::interp_mode;
     Step::expr = lhs;
-    Step::env = Step::env; /* no-op, so could omit */
     Step::cont = NEW(RightThenMultCont)(rhs, Step::env, Step::cont);
 }
 void MultExpr::print(std::ostream &output) {
@@ -357,7 +355,6 @@ PTR(Val) LetExpr::interp(PTR(Env) env) {
 void LetExpr::step_interp() {
     Step::mode = Step::interp_mode;
     Step::expr = rhs;
-    Step::env = Step::env;
     Step::cont = NEW(LetBodyCont)(lhs->name, body, Step::env, Step::cont);
 }
 void LetExpr::print(std::ostream &output) {
@@ -408,8 +405,8 @@ PTR(Val) FunExpr::interp(PTR(Env) env) {
 }
 void FunExpr::step_interp() {
     Step::mode = Step::continue_mode;
-    Step::val = NEW(FunVal)(formal_arg->name, body, Env::empty);
-    Step::cont = Step::cont; /* no-op */
+    Step::val = NEW(FunVal)(formal_arg->name, body, Step::env);
+    Step::env = NEW(ExtendedEnv)(formal_arg->name, Step::val, Step::env);
 }
 void FunExpr::print(std::ostream &output) {
     output << "(_fun (" << this->formal_arg->name << ") " << body->to_string() << ")";

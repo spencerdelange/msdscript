@@ -27,6 +27,7 @@ public:
     virtual bool is_true() = 0;
     // Returns the value of a function being called by the given argument value
     virtual PTR(Val) call(PTR(Val) actual_arg) = 0;
+    virtual void call_step(PTR(Val) actual_arg, PTR(Cont) rest) = 0;
     // Returns a string representing this value
     virtual std::string to_string() = 0;
     // Satisfies 'virtual destructors' warning
@@ -49,6 +50,7 @@ public:
     bool is_true() override;
     // Returns the value of a function being called by the given argument value
     PTR(Val) call(PTR(Val) actual_arg) override;
+    void call_step(PTR(Val) actual_arg, PTR(Cont) rest) override;
     // Returns a string representing this value
     std::string to_string() override;
 };
@@ -69,6 +71,7 @@ public:
     bool is_true() override;
     // Returns the value of a function being called by the given argument value
     PTR(Val) call(PTR(Val) actual_arg) override;
+    void call_step(PTR(Val) actual_arg, PTR(Cont) rest) override;
     // Returns a string representing this value
     std::string to_string() override;
 };
@@ -92,7 +95,7 @@ public:
     // Returns the value of a function being called by the given argument value
     PTR(Val) call(PTR(Val) actual_arg) override;
     // Does one call_step
-    void call_step(PTR(Val) actual_arg_val, PTR(Cont) rest);
+    void call_step(PTR(Val) actual_arg_val, PTR(Cont) rest) override;
     // Returns a string representing this value
     std::string to_string() override;
 };

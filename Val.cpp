@@ -41,6 +41,9 @@ bool NumVal::is_true(){
 PTR(Val) NumVal::call(PTR(Val) actual_arg){
     throw std::runtime_error("NumVal is not a function that can be called");
 }
+void NumVal::call_step(PTR(Val) actual_arg_val, PTR(Cont) rest) {
+    throw runtime_error("num Cannot call_step");
+}
 std::string NumVal::to_string() {
     return std::to_string(rep);
 }
@@ -69,6 +72,9 @@ bool BoolVal::is_true(){
 }
 PTR(Val) BoolVal::call(PTR(Val) actual_arg){
     throw std::runtime_error("BoolVal is not a function that can be called");
+}
+void BoolVal::call_step(PTR(Val) actual_arg_val, PTR(Cont) rest) {
+    throw runtime_error("bool Cannot call_step");
 }
 
 std::string BoolVal::to_string() {

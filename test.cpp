@@ -355,6 +355,26 @@ TEST_CASE("interp_by_step tests"){
                     "    _else 2"))->equals(NEW(NumVal)(1)));
     CHECK(Step::interp_by_steps(parse_str("_let f = _fun (x) x + 1\n"
                     "_in f(10)"))->equals(NEW(NumVal)(11)));
+    CHECK(parse_str("_let x = 1\n"
+                    "_in _let y = 2\n"
+                    "_in _let z = 2\n"
+                    "_in _if x == y\n"
+                    "    _then 0\n"
+                    "    _else _if (y == z) == _true\n"
+                    "    _then 3\n"
+                    "    _else 0")->interp(Env::empty)->equals(NEW(NumVal)(3)));
+    CHECK(parse_str("_let f = _fun (g) \n"
+                    "              g(5) \n"
+                    "   _in _let g = _fun (y) \n"
+                    "                  y + 2 \n"
+                    "       _in f(g)")
+                  ->interp(Env::empty)->equals(NEW(NumVal)(7)));
+    Step::interp_by_steps(parse_str("_let countdown = _fun(countdown)\n"
+                 "                   _fun(n)\n"
+                 "                     _if n == 0\n"
+                 "                     _then 0\n"
+                 "                     _else countdown(countdown)(n + -1)\n"
+                 "_in countdown(countdown)(1000000)"));
 }
 
 
