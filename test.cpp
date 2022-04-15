@@ -369,12 +369,7 @@ TEST_CASE("interp_by_step tests"){
                     "                  y + 2 \n"
                     "       _in f(g)")
                   ->interp(Env::empty)->equals(NEW(NumVal)(7)));
-    Step::interp_by_steps(parse_str("_let countdown = _fun(countdown)\n"
-                 "                   _fun(n)\n"
-                 "                     _if n == 0\n"
-                 "                     _then 0\n"
-                 "                     _else countdown(countdown)(n + -1)\n"
-                 "_in countdown(countdown)(1000000)"));
+    Step::interp_by_steps(parse_str("_let countdown = _fun(countdown)  _fun(n)  _if n == 0 _then 0  _else countdown(countdown)(n + -1) _in countdown(countdown)(1000000)"))->equals(NEW(NumVal)(1));
 }
 
 
